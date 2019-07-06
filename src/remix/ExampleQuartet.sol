@@ -5,7 +5,7 @@ pragma solidity ^0.5.8;
 contract Quartet {
     //state variables
     address private _player;
-    
+
     bool private _roundInProgress;
     bool private _displayUpdate;
     bool private _dDown;
