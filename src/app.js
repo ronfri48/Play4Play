@@ -1,13 +1,20 @@
 const express = require('express')
-const xxx = require('web3')
+const fs = require('file-system')
 const app = express()
 const port = 3000
 
-app.use(express.static('public'))
+app.use(express.static('src/public'))
 app.use(express.static('src/node_modules'))
+app.use(express.static('public'))
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
 
+let credFileName = 'credentials.json';
+if (fs.existsSync(credFileName)) {
+    var rawdata = fs.readFileSync(credFileName);
+} else {
+    var rawdata = fs.readFileSync('src/' + credFileName);
+}
 
 /*
 // ATTENTION!
