@@ -28,13 +28,14 @@ contract Quartet {
     uint256 private _watcherPrice = 3;
     uint256 private _swapperPrice = 4;
     Card[] private _moreCards;
+    Card[] private _allCards;
 
 
     ///-----------event logging-------------///
     event PlayerDeposit(address _contract, address _player, uint256 _amount);
     event PlayerWithdrawal(address _contract, address _player, uint256 _amount);
     event CardMove(address _src, address _dst, bytes32 _cardName);
-    event FourFound(address _player, bytes32 _cardFamily);
+    event FourFound(address _player, string _cardFamily);
     event JokerUsed(address _player);
     event SwapperUsed(address _player, address _swappedPlayer);
     event WatcherUsed(address _player, address _watchedPlayer);
@@ -75,6 +76,48 @@ contract Quartet {
         _currentPlayer = address(0x0);
         _winBalance = 0;
         _numberOfPlayers = 0;
+
+        _allCards.push(new Card("Diskont", Card.CardFamilies.Banks));
+        _allCards.push(new Card("Hapoalim", Card.CardFamilies.Banks));
+        _allCards.push(new Card("OtzarHahayal", Card.CardFamilies.Banks));
+        _allCards.push(new Card("Pepper", Card.CardFamilies.Banks));
+        _allCards.push(new Card("HapoelBeerSheva", Card.CardFamilies.BasketBallTeams));
+        _allCards.push(new Card("HapoelJerusalem", Card.CardFamilies.BasketBallTeams));
+        _allCards.push(new Card("MacabiTelAviv", Card.CardFamilies.BasketBallTeams));
+        _allCards.push(new Card("MacabiRishonLetzion", Card.CardFamilies.BasketBallTeams));
+        _allCards.push(new Card("BarRefaeli", Card.CardFamilies.Celebs));
+        _allCards.push(new Card("GalGadot", Card.CardFamilies.Celebs));
+        _allCards.push(new Card("Netta", Card.CardFamilies.Celebs));
+        _allCards.push(new Card("OmriCasspi", Card.CardFamilies.Celebs));
+        _allCards.push(new Card("Eilat", Card.CardFamilies.Cities));
+        _allCards.push(new Card("Haifa", Card.CardFamilies.Cities));
+        _allCards.push(new Card("Jerusalem", Card.CardFamilies.Cities));
+        _allCards.push(new Card("TelAviv", Card.CardFamilies.Cities));
+        _allCards.push(new Card("Bamba", Card.CardFamilies.Food));
+        _allCards.push(new Card("Falafel", Card.CardFamilies.Food));
+        _allCards.push(new Card("Humus", Card.CardFamilies.Food));
+        _allCards.push(new Card("Shakshuka", Card.CardFamilies.Food));
+        _allCards.push(new Card("BeitarJerusalem", Card.CardFamilies.FootBallTeams));
+        _allCards.push(new Card("HapoelBeerSheva", Card.CardFamilies.FootBallTeams));
+        _allCards.push(new Card("MacabiHaifa", Card.CardFamilies.FootBallTeams));
+        _allCards.push(new Card("MacabiTelAviv", Card.CardFamilies.FootBallTeams));
+        _allCards.push(new Card("IronDome", Card.CardFamilies.Inventions));
+        _allCards.push(new Card("Mobileye", Card.CardFamilies.Inventions));
+        _allCards.push(new Card("Usb", Card.CardFamilies.Inventions));
+        _allCards.push(new Card("Waze", Card.CardFamilies.Inventions));
+        _allCards.push(new Card("Masada", Card.CardFamilies.Places));
+        _allCards.push(new Card("RamonCenter", Card.CardFamilies.Places));
+        _allCards.push(new Card("WesternWall", Card.CardFamilies.Places));
+        _allCards.push(new Card("HebrewUniversity", Card.CardFamilies.Univrsities));
+        _allCards.push(new Card("IDC", Card.CardFamilies.Univrsities));
+        _allCards.push(new Card("Technion", Card.CardFamilies.Univrsities));
+        _allCards.push(new Card("TelAvivUniversity", Card.CardFamilies.Univrsities));
+        _allCards.push(new Card("Toda", Card.CardFamilies.Words));
+        _allCards.push(new Card("Sababa", Card.CardFamilies.Words));
+        _allCards.push(new Card("Kapara", Card.CardFamilies.Words));
+        _allCards.push(new Card("Basa", Card.CardFamilies.Words));
+
+        _moreCards = _allCards;
     }
 
 
@@ -99,6 +142,8 @@ contract Quartet {
         _numberOfPlayers++;
 
         emit PlayerDeposit(address(this), msg.sender, msg.value);
+
+        evenGame();
 
         return "Registered Successfuly.";
     }
@@ -181,11 +226,11 @@ contract Quartet {
         }
     }
 
-    function findFours(address _player, uint _numberOfJokersToUse) public returns(CardFamilies[]) {
+    function findFours(address _player, uint _numberOfJokersToUse) public returns(Card.CardFamilies[] memory) {
         require(_numberOfJokersToUse <= _players[_player].numberOfJokers, "Can not use more jokers than current num of jokers.");
 
         Card[] memory _playerCards = _players[_player].cards;
-        CardFamilies[] memory _foundFours;
+        Card.CardFamilies[] memory _foundFours;
 
         // Find fours
         for(uint i = 0; i < _playerCards.length; i++) {
@@ -203,8 +248,10 @@ contract Quartet {
                     emit JokerUsed(_player);
                 }
 
-                CardFamilies _cardFamily = _playerCards[i].family();
-                emit FourFound(_player, _cardFamily);
+                Card.CardFamilies _cardFamily = _playerCards[i].family();
+                string memory _cardFamilyStr = "";
+                _cardFamilyStr += string.toString(_cardFamily);
+                emit FourFound(_player, _cardFamilyStr);
                 _foundFours.push(_cardFamily);
 
                 _players[_player].numberOfFours++;
@@ -279,7 +326,7 @@ contract Quartet {
     }
 
     function swapCards(address _playerToSwapWith) public {
-        require(_players[_player].numberOfSwappers > 0, "Can not use swapper if have no swappers.");
+        require(_players[msg.sender].numberOfSwappers > 0, "Can not use swapper if have no swappers.");
 
         Card[] memory _senderCards = _players[msg.sender].cards;
         Card[] memory _swappedCards = _players[_playerToSwapWith].cards;
@@ -291,7 +338,7 @@ contract Quartet {
     }
 
     function watchCards(address _playerToWatch) public returns(Card[] memory) {
-        require(_players[_player].numberOfWatchers > 0, "Can not use watcher if have no watchers.");
+        require(_players[msg.sender].numberOfWatchers > 0, "Can not use watcher if have no watchers.");
 
         emit WatcherUsed(msg.sender, _playerToWatch);
         _players[msg.sender].numberOfSwappers--;
@@ -311,5 +358,14 @@ contract Quartet {
     function buySwapper() public payable {
         require(msg.value == _swapperPrice, "Should pay for swapper");
         _players[msg.sender].numberOfSwappers++;
+    }
+
+    function getHashForCard(bytes32 _name) public returns (Card){
+        for(uint index = 0; index < _allCards.length; index++) {
+            if(_allCards[index].name() == _name) {
+                return _allCards[index].getHash();
+            }
+        }
+        revert("Can not find requested card");
     }
 }
