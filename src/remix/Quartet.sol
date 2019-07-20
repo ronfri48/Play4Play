@@ -3,6 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import "./Card.sol";
 import "./strings.sol";
+import "./QuartetCoin.sol";
 
 contract Quartet {
     using strings for *;
@@ -29,6 +30,7 @@ contract Quartet {
     uint256 private _swapperPrice = 4;
     Card[] private _moreCards;
     Card[] private _allCards;
+    QuartetCoin private _quartetCoin;
 
 
     ///-----------event logging-------------///
@@ -59,6 +61,12 @@ contract Quartet {
         _;
     }
 
+    //make sure there are no players
+    modifier areThereNoPlayers() {
+        require(_numberOfPlayers == 0, "Game can be closed only after there are no players.");
+        _;
+    }
+
     //make sure the game has finished
     modifier hasGameFinished() {
         require(_moreCards.length == 0, "Game is finished only after there are no remaining cards.");
@@ -67,15 +75,17 @@ contract Quartet {
 
     //make sure the requested player is the current player
     modifier isCurrentPlayer(address _player) {
-        require(msg.sender == _player, "Only player can get his cards.");
+        require(_currentPlayer == _player, "Only player can get his cards.");
         _;
     }
 
     ///******constructor********///
-    constructor() public {
+    constructor(address _coinAddress) public {
         _currentPlayer = address(0x0);
         _winBalance = 0;
         _numberOfPlayers = 0;
+        
+        _quartetCoin = QuartetCoin(_coinAddress);
 
         _allCards.push(new Card("Diskont", "Banks"));
         _allCards.push(new Card("Hapoalim", "Banks"));
@@ -133,7 +143,8 @@ contract Quartet {
         //make sure contract cannot accept more than ether limit
         require((_winBalance + msg.value) <= _ethLimit, "Too much Ether!");
 
-        _winBalance += msg.value;
+        // For every player - add 1 to the winning prize
+        _winBalance += 1;
 
         // Add player
         Card[] memory _cards;
@@ -191,7 +202,27 @@ contract Quartet {
         return false;
     }
 
+    function doesPlayerHasCardFromFamily(address _player, string memory _cardName) internal isPlayer(_player) returns (bool) {
+        string memory _cardFamily;
+        Card[] memory _playerCards = _players[_player].cards;
+
+        for(uint i = 0; i<_allCards.length; i++){
+            if (StringUtils.equal(_cardName, _allCards[i].name())) {
+                _cardFamily = _allCards[i].family();
+            }
+        }
+
+        for(uint j = 0; j < _playerCards.length; j++) {
+            if (StringUtils.equal(_cardFamily, _playerCards[j].family())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     function getCardFromPlayer(address _player, string memory _cardName) internal isPlayer(_player) returns (Card) {
+        require(doesPlayerHasCardFromFamily(msg.sender, _cardName), "You can not ask about a family you don't have");
         require(doesPlayerHaveCard(_player, _cardName), "Src Player does not have the card");
 
         Card[] memory _playerCards = _players[_player].cards;
@@ -247,7 +278,7 @@ contract Quartet {
                     _players[_player].numberOfJokers--;
                     emit JokerUsed(_player);
                 }
-  
+
                 emit FourFound(_player, _playerCards[i].family());
                 _foundFours.push(_playerCards[i].family());
 
@@ -287,9 +318,17 @@ contract Quartet {
                 maxFours = _players[_playersIndex[i]].numberOfFours;
             }
         }
-
-        address(_winningPlayer).transfer(_winBalance);
+        
+        _quartetCoin.transfer(_winningPlayer, _winBalance);
         emit PlayerWithdrawal(address(this), _winningPlayer, _winBalance);
+    }
+
+    function closeGame() public hasGameFinished areThereNoPlayers {
+        _currentPlayer = address(0x0);
+        _numberOfPlayers = 0;
+        _winBalance = 0;
+
+        _moreCards = _allCards;
     }
 
     function getPlayerCards(address _player) public view isCurrentPlayer(_player) returns (Card[] memory) {
@@ -355,12 +394,16 @@ contract Quartet {
         _players[msg.sender].numberOfSwappers++;
     }
 
-    function getHashForCard(string memory _name) view public returns (bytes32){
+    function getHashForCard(string memory _name) public view returns (bytes32){
         for(uint index = 0; index < _allCards.length; index++) {
             if(StringUtils.equal(_allCards[index].name(),  _name)) {
                 return _allCards[index].getHash();
             }
         }
         revert("Can not find requested card");
+    }
+
+    function goToNextPlayer(address _player) public {
+        _currentPlayer = _player;
     }
 }

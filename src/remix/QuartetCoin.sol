@@ -1,7 +1,7 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.4.24;
 
 import "./ERC20.sol";
-import "../Ownable/Ownable.sol";
+import "./Ownable.sol";
 
 contract QuartetCoin is ERC20, Ownable {
 
