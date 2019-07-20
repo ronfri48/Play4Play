@@ -52,6 +52,11 @@ app.get('/getGameMessages', (req, res) => {
     let messages = ['player1 gave player2: hummus, bamba']
     res.json(messages)
 })
+app.get('/getPlayers', (req, res) => {
+    let messages = ['player1', 'player2', 'player3']
+    res.json(messages)
+})
+
 
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))

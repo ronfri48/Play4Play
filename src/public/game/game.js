@@ -4,6 +4,7 @@ var cardTemplate = '<div class="card" style="width: 18rem;"><img src="CardImgSrc
 var serverAddress = 'http://localhost:3000'
 var getMyCardsFunction = '/getMyCards'
 var getMessagesFunction = '/getGameMessages'
+var getPlayersFunction = '/getPlayers'
 
 function display_cards(cards) {
     var cardsTable = document.getElementsByClassName("player-cards")
@@ -29,16 +30,6 @@ function fill_card_details(cardValues) {
     return innerHTML;
 }
 
-function getMyCards(callback) {
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function () {
-        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-            callback(JSON.parse(xmlHttp.responseText));
-    }
-    xmlHttp.open("GET", serverAddress + getMyCardsFunction, true); // true for asynchronous 
-    xmlHttp.send(null);
-}
-
 function updateMessages(messages) {
     let messageArea = document.getElementById('info-message-area')
     messageArea.innerHTML = ""
@@ -51,21 +42,34 @@ function updateMessages(messages) {
     }
 }
 
-function checkForMessages(callback) {
+function displayPlayers(players) {
+    let playerListHeaderElement = document.getElementById('player-list');
+    playerListHeaderElement.innerHTML = 'Players in the game: '
+    for (let i = 0; i < players.length; i++) {
+        playerListHeaderElement.innerHTML += players[i];
+        if (i + 1 < players.length) {
+            playerListHeaderElement.innerHTML += ', '
+        }
+    }
+}
+
+function fetchFromServer(functionName, callback) {
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function () {
         if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
             callback(JSON.parse(xmlHttp.responseText));
     }
-    xmlHttp.open("GET", serverAddress + getMessagesFunction, true); // true for asynchronous 
+    xmlHttp.open("GET", serverAddress + functionName, true); // true for asynchronous 
     xmlHttp.send(null);
 }
 
 
+
 window.addEventListener('load', function () {
+    fetchFromServer(getPlayersFunction, displayPlayers);
     setInterval(function () {
-        checkForMessages(updateMessages)
+        checkForMessages(getMessagesFunction, updateMessages)
     }, 3000);
 
-    getMyCards(display_cards)
+    fetchFromServer(getMyCardsFunction, display_cards)
 })
