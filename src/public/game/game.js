@@ -1,10 +1,7 @@
 const cardsInRow = 4;
 var web3js;
-var cardTemplate = '<div class="card" style="width: 18rem;"><img src="..." class="card-img-top" alt="..."><div class="card-body"><h5 class="card-title">Card title</h5></div></div>';
+var cardTemplate = '<div class="card" style="width: 18rem;"><img src="CardImgSrc" class="card-img-top" alt="CardName"><div class="card-body"><h5 class="card-title">CardTitle</h5></div></div>';
 
-function load_contract() {
-    var myContract = new web3js.eth.Contract(myABI, myContractAddress);
-}
 
 function display_cards() {
     var playerCards = 6;
@@ -32,6 +29,6 @@ window.addEventListener('load', function () {
     if (typeof web3 !== 'undefined') {
         web3js = new Web3(web3.currentProvider);
     } else {}
-    load_contract();
+
     display_cards();
 })
