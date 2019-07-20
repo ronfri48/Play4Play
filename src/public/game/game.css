@@ -1,3 +1,12 @@
 td {
     padding: 30px;
 }
+
+.selectors-div {
+    display: inline-flex;
+}
+
+.side-margin {
+    margin-left: 6px;
+    margin-right: 6px;
+}

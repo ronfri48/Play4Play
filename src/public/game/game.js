@@ -5,6 +5,8 @@ var serverAddress = 'http://localhost:3000'
 var getMyCardsFunction = '/getMyCards'
 var getMessagesFunction = '/getGameMessages'
 var getPlayersFunction = '/getPlayers'
+var cardTypes = ['banks', 'basketball_teams', 'celebs', 'cities', 'food', 'football_teams', 'inventions', 'places', 'universities', 'words'];
+var currentGamePlayers;
 
 function display_cards(cards) {
     var cardsTable = document.getElementsByClassName("player-cards")
@@ -43,6 +45,7 @@ function updateMessages(messages) {
 }
 
 function displayPlayers(players) {
+    currentGamePlayers = players;
     let playerListHeaderElement = document.getElementById('player-list');
     playerListHeaderElement.innerHTML = 'Players in the game: '
     for (let i = 0; i < players.length; i++) {
@@ -51,6 +54,8 @@ function displayPlayers(players) {
             playerListHeaderElement.innerHTML += ', '
         }
     }
+
+    displaySelectors() //only now we can display the players
 }
 
 function fetchFromServer(functionName, callback) {
@@ -63,13 +68,37 @@ function fetchFromServer(functionName, callback) {
     xmlHttp.send(null);
 }
 
+function displaySelectors() {
+    let playerSelectorElement = document.getElementById('player-selector');
+    playerSelectorElement.innerHTML = '';
+    for (let i = 0; i < currentGamePlayers.length; i++) {
+        let optionElement = document.createElement('OPTION');
+        optionElement.value = currentGamePlayers[i];
+        optionElement.innerHTML = currentGamePlayers[i];
+        playerSelectorElement.appendChild(optionElement);
+    }
 
+    let cardSelectorElement = document.getElementById('card-selector');
+    cardSelectorElement.innerHTML = '';
+    for (let i = 0; i < cardTypes.length; i++) {
+        let optionElement = document.createElement('OPTION');
+        optionElement.value = cardTypes[i];
+        optionElement.innerHTML = cardTypes[i];
+        cardSelectorElement.appendChild(optionElement);
+    }
+}
+
+function requestCards() {
+    let playerSelcted = document.getElementById('player-selector').value;
+    let cardSelcted = document.getElementById('card-selector').value;
+
+    //do server work
+}
 
 window.addEventListener('load', function () {
     fetchFromServer(getPlayersFunction, displayPlayers);
     setInterval(function () {
-        checkForMessages(getMessagesFunction, updateMessages)
+        fetchFromServer(getMessagesFunction, updateMessages)
     }, 3000);
-
     fetchFromServer(getMyCardsFunction, display_cards)
 })

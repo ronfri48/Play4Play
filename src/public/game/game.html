@@ -18,8 +18,21 @@
         <a class="navbar-brand navbar-padding" href="/game/game.html">Your Current Game</a>
     </nav>
 
-    <h2 id='player-list'>Players in the game: </h2>
+    <h4 id='player-list'>Players in the game: </h4>
+    <div class="selectors-div">
+        <h4 class="side-margin">Request Type: </h4>
 
+        <select id='card-selector'>
+        </select>
+
+        <h4 class="side-margin"> From Player: </h4>
+
+        <select id='player-selector'>
+        </select>
+
+        <button id="request-cards-button" class="side-margin btn btn-primary btn-sm" onclick="requestCards()">Request
+            Cards</button>
+    </div>
     <table class="player-cards">
 
     </table>
