@@ -10,8 +10,6 @@ process.env.PWD = process.cwd()
 app.use(express.static('src/public'))
 app.use(express.static('src/node_modules'))
 app.use(express.static('public'))
-app.use(express.static('/resources'))
-app.use(express.static('src/resources'))
 
 load_contract();
 
@@ -27,7 +25,6 @@ app.get('/getRandom', (req, res) => {
     });
 
 });
-
 app.get('/getMyCards', (req, res) => {
 
     //this is stub
@@ -51,6 +48,11 @@ app.get('/getMyCards', (req, res) => {
 
     res.json(cards);
 })
+app.get('/getGameMessages', (req, res) => {
+    let messages = ['player1 gave player2: hummus, bamba']
+    res.json(messages)
+})
+
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
 
