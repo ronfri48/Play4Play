@@ -3,6 +3,7 @@
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="../index.css">
     <link rel="stylesheet" type="text/css" href="new-game.css">
+    <script src="/new-game/new-game.js" type="text/javascript"></script>
 </head>
 
 <body>
@@ -16,4 +17,14 @@
         <a class="navbar-brand navbar-padding" href="/join-game/join-game.html">Join A Game</a>
         <a class="navbar-brand navbar-padding" href="/game/game.html">Your Current Game</a>
     </nav>
+
+    <div class="form-group">
+        <label for="name">Game Name</label>
+        <input class="form-control game-name-input" aria-describedby="name" placeholder="Game Name">
+        <small class="form-text text-muted">Thats how your friends could recognize your game</small>
+    </div>
+
+    <button onclick="submitButtonClicked()" class="btn btn-primary btn-lg new-game-button">Create New
+        Game</button>
+
 </body>
