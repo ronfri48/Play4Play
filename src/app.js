@@ -5,10 +5,13 @@ const web3js = require('web3')
 const app = express()
 const port = 3000
 var myContract, account, myContractAddress, myABI;
+process.env.PWD = process.cwd()
 
 app.use(express.static('src/public'))
 app.use(express.static('src/node_modules'))
 app.use(express.static('public'))
+app.use(express.static('/resources'))
+app.use(express.static('src/resources'))
 
 load_contract();
 
@@ -25,15 +28,31 @@ app.get('/getRandom', (req, res) => {
 
 });
 
+app.get('/getMyCards', (req, res) => {
+
+    //this is stub
+    cards = [{
+            type: 'banks',
+            value: 'diskont'
+        },
+        {
+            type: 'cities',
+            value: 'jerusalem'
+        },
+        {
+            type: 'food',
+            value: 'bamba'
+        },
+        {
+            type: 'food',
+            value: 'humus'
+        }
+    ]
+
+    res.json(cards);
+})
+
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
-
-let credFileName = 'credentials.json';
-if (fs.existsSync(credFileName)) {
-    var rawdata = fs.readFileSync(credFileName);
-} else {
-    var rawdata = fs.readFileSync('src/' + credFileName);
-}
-
 
 function load_contract() {
     var account = '0x3ee54cf657411f96a956344f08683f2a550d5869'
@@ -69,6 +88,6 @@ function load_contract() {
         web3 = new web3js("https://ropsten.infura.io/v3/22156e2cbcd9492aa066ac25ccd14174");
     }
     myContract = web3.eth.Contract(myABI, myContractAddress, {
-        defaultAccount: '0x3ee54cf657411f96a956344f08683f2a550d5869'
+        defaultAccount: account
     });
 }

@@ -1,18 +1,18 @@
 const cardsInRow = 4;
 var web3js;
 var cardTemplate = '<div class="card" style="width: 18rem;"><img src="CardImgSrc" class="card-img-top" alt="CardName"><div class="card-body"><h5 class="card-title">CardTitle</h5></div></div>';
+var serverAddress = 'http://localhost:3000'
+var getMyCardsFunction = '/getMyCards'
 
-
-function display_cards() {
-    var playerCards = 6;
+function display_cards(cards) {
     var cardsTable = document.getElementsByClassName("player-cards")
-    for (var i = 0; i < playerCards; i++) {
+    for (var i = 0; i < cards.length; i++) {
         var tr = document.createElement('tr');
         for (var j = 0; j < cardsInRow; j++) {
-            if (cardsInRow * i + j < playerCards) {
+            let cardIndex = cardsInRow * i + j
+            if (cardIndex < cards.length) {
                 var card = document.createElement('td');
-                card.innerHTML = cardTemplate;
-                card = fill_card_details(card);
+                card.innerHTML = fill_card_details(cards[cardIndex]);
                 tr.appendChild(card);
             }
         }
@@ -20,15 +20,24 @@ function display_cards() {
     }
 }
 
-function fill_card_details(card) {
-    return card;
+function fill_card_details(cardValues) {
+    let innerHTML = cardTemplate;
+    innerHTML = innerHTML.replace('CardImgSrc', '/../../resources/cards/' + cardValues['type'] + '/' + cardValues['value'] + '.jpg')
+    innerHTML = innerHTML.replace('CardName', cardValues['value'])
+    innerHTML = innerHTML.replace('CardTitle', cardValues['value'])
+    return innerHTML;
 }
 
+function getMyCards(callback) {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function () {
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+            callback(JSON.parse(xmlHttp.responseText));
+    }
+    xmlHttp.open("GET", serverAddress + getMyCardsFunction, true); // true for asynchronous 
+    xmlHttp.send(null);
+}
 
 window.addEventListener('load', function () {
-    if (typeof web3 !== 'undefined') {
-        web3js = new Web3(web3.currentProvider);
-    } else {}
-
-    display_cards();
+    getMyCards(display_cards)
 })
