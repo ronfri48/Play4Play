@@ -5,3 +5,15 @@ body {
 .navbar-padding {
     padding: 5px;
 }
+
+.hidden {
+    display: hidden;
+}
+
+.show {
+    display: block;
+}
+
+.public-key-input {
+    width: 400px;
+}
