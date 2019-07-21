@@ -1,5 +1,4 @@
 const express = require('express')
-const fs = require('file-system')
 const web3js = require('web3')
 
 const app = express()
@@ -43,6 +42,14 @@ app.get('/getMyCards', (req, res) => {
         {
             type: 'food',
             value: 'humus'
+        },
+        {
+            type: 'words',
+            value: 'basa'
+        },
+        {
+            type: 'words',
+            value: 'sababa'
         }
     ]
 
