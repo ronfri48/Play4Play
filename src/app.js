@@ -87,8 +87,10 @@ app.get('/getListOfGames', (req, res) => {
     }]
     res.json(games)
 })
-
-
+app.get('/createNewGame', (req, res) => {
+    let gameName = req.query['gameName']
+    res.json(gameName == 'x')
+})
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
 
