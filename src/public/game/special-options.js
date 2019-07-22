@@ -1,20 +1,15 @@
-var serverAddress = 'http://localhost:3000';
-
-function fetchFromServer(functionName, callback, parameterString) {
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function () {
-        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-            callback(JSON.parse(xmlHttp.responseText));
-    }
-    if (parameterString) {
-        parameterString = '?' + parameterString;
-        xmlHttp.open("GET", serverAddress + functionName + parameterString, true);
-    } else {
-        xmlHttp.open("GET", serverAddress + functionName, true);
-    }
-
-    xmlHttp.send(null);
-}
+var serverAddress = 'http://localhost:3000/';
+var specialOptionsData = [{
+    index: 0,
+    title: 'swap',
+    message: 'Please choose player to swap cards with',
+    callbak: useSwapCardsOnPlayer
+}, {
+    index: 1,
+    title: 'sneaky peaky',
+    message: 'Please choose player to see his/her cards',
+    callbak: useSneakyPeakyOnPlayer
+}]
 
 function useJokerCard() {
     let pk = document.cookie.substr('publicKey='.length, 40);
@@ -25,12 +20,30 @@ function useJokerCard() {
     }, 'pk=' + pk)
 }
 
-function showPlayerSelectionModal(callback) {
+function showPlayerSelectionModal(functionIndex) {
+    let modalElement = document.getElementsByClassName('modal')[0];
+    modalElement.className = 'modal show'
+    let messageModalElement = document.getElementsByClassName('special-option-message')[0];
+    messageModalElement.innerHTML = specialOptionsData[functionIndex].message;
 
+    let playerSelectorElement = document.getElementById('special-player-selector');
+    playerSelectorElement.innerHTML = '';
+    for (let i = 0; i < currentGamePlayers.length; i++) {
+        let optionElement = document.createElement('OPTION');
+        optionElement.value = currentGamePlayers[i];
+        optionElement.innerHTML = currentGamePlayers[i];
+        playerSelectorElement.appendChild(optionElement);
+    }
+
+    let choosePlayerButtonElement = document.getElementById('choose-player-button');
+    choosePlayerButtonElement.onclick = function () {
+        specialOptionsData[functionIndex].callbak();
+        modalElement.className = 'modal hide';
+    };
 }
 
 function useSneakyPeaky() {
-    showPlayerSelectionModal(useSneakyPeakyOnPlayer);
+    showPlayerSelectionModal(1);
 }
 
 function useSneakyPeakyOnPlayer() {
@@ -44,7 +57,7 @@ function useSneakyPeakyOnPlayer() {
 }
 
 function useSwapCards() {
-    showPlayerSelectionModal(useSwapCardsOnPlayer);
+    showPlayerSelectionModal(0);
 }
 
 function useSwapCardsOnPlayer() {
