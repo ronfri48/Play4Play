@@ -8,6 +8,14 @@ var getPlayersFunction = '/getPlayers'
 var cardTypes = ['banks', 'basketball_teams', 'celebs', 'cities', 'food', 'football_teams', 'inventions', 'places', 'universities', 'words'];
 var currentGamePlayers;
 var pngFiles = ['macabi-tel-aviv', 'BeitarJerusalem', 'macabi-tel-aviv', 'Waze', 'mobileye', 'usb', 'sababa', 'GAME-OVER', 'hapoel_beer_sheva', 'hpaoel-jerusalem'];
+var technicalMessages = [{
+    index: 0,
+    message: 'connected to game',
+    function: loadGame
+}, {
+    index: 1,
+    message: 'took cards from deck'
+}]
 
 function display_cards(cards) {
     var cardsTable = document.getElementsByClassName("player-cards")
@@ -42,6 +50,9 @@ function updateMessages(messages) {
     let messageArea = document.getElementById('info-message-area')
     messageArea.innerHTML = ""
     for (let i = 0; i < messages.length; i++) {
+        if (technicalMessages.map(x => x['message']).includes(messages[i])) {
+            technicalMessages.find(x => x['message'] === messages[i])['function']();
+        }
         let messageElement = document.createElement('DIV')
         messageElement.className = 'alert alert-info'
         messageElement.role = 'alert'
@@ -102,9 +113,22 @@ function requestCards() {
 }
 
 window.addEventListener('load', function () {
-    fetchFromServer(getPlayersFunction, displayPlayers);
+    //get from contract if the game is started
+    loadGame();
+
     setInterval(function () {
-        fetchFromServer(getMessagesFunction, updateMessages)
+        fetchFromServer(getMessagesFunction, updateMessages);
     }, 3000);
-    fetchFromServer(getMyCardsFunction, display_cards)
 })
+
+function loadGame() {
+    let isGameOn = false;
+    let mainHeaderElement = document.getElementsByClassName('main-header')[0];
+    if (isGameOn) {
+        mainHeaderElement.innerHTML = 'Good Luck!';
+        fetchFromServer(getPlayersFunction, displayPlayers);
+        fetchFromServer(getMyCardsFunction, display_cards);
+    } else {
+        mainHeaderElement.innerHTML = "Game has not started yet. Wait For more players";
+    }
+}
