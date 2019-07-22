@@ -30,7 +30,7 @@ function displayCards(cards) {
     for (var i = 0; cardIndex < cards.length; i++) {
         var tr = document.createElement('tr');
         for (var j = 0; j < cardsInRow; j++) {
-            let cardIndex = cardsInRow * i + j
+            cardIndex = cardsInRow * i + j
             if (cardIndex < cards.length) {
                 var card = document.createElement('td');
                 card.innerHTML = fillCardDetails(cards[cardIndex]);

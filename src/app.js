@@ -72,6 +72,21 @@ app.get('/requestCards', (req, res) => {
     let card = req.query['card'];
     res.json(3)
 })
+app.get('/addToGame', (req, res) => {
+    let playerPk = req.query['pk'];
+    let gameIndex = req.query['gameIndex']
+    res.json(true)
+})
+app.get('/getListOfGames', (req, res) => {
+    let games = [{
+        Name: 'best game ever',
+        Players: 'Itzik, Micha, Shimon, Edna'
+    }, {
+        Name: 'greatet game ever',
+        Players: 'Netanel, Ron, Shmulik, Ziva'
+    }]
+    res.json(games)
+})
 
 
 
