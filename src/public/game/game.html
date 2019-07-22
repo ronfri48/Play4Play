@@ -4,6 +4,7 @@
     <link rel="stylesheet" type="text/css" href="/../index.css">
     <link rel="stylesheet" type="text/css" href="/game/game.css">
     <script src="/game/game.js" type="text/javascript"></script>
+    <script src="/game/special-options.js" type="text/javascript"></script>
 </head>
 
 <body>
@@ -33,6 +34,28 @@
         <button id="request-cards-button" class="side-margin btn btn-primary btn-sm" onclick="requestCards()">Request
             Cards</button>
     </div>
+
+    <table class="special-options-table">
+        <tr>
+            <td>
+                <button class="btn btn-primary special-option-button" onclick="useJokerCard()">Buy & use joker
+                    card</button>
+            </td>
+            <td>
+                <button class="btn btn-primary special-option-button" onclick="useSneakyPeaky()">Buy & use sneaky
+                    peaky</button>
+            </td>
+            <td>
+                <button class="btn btn-primary special-option-button" onclick="useSwapCards()">Buy & use swapping
+                    cards</button>
+            </td>
+            <td>
+                <button class="btn btn-danger special-option-button" onclick="leaveGame()">Leave game</button>
+            </td>
+        </tr>
+
+    </table>
+
     <table class="player-cards">
 
     </table>

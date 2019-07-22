@@ -19,7 +19,10 @@ var technicalMessages = [{
     }
 }, {
     index: 1,
-    message: 'took cards from deck'
+    message: 'took cards from deck',
+    function: function () {
+        loadGame();
+    }
 }]
 
 

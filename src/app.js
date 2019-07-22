@@ -124,7 +124,6 @@ function load_contract() {
         var web3;
         web3 = new web3js(web3.currentProvider);
     } else {
-        // set the provider you want from Web3.providers
         web3 = new web3js("https://ropsten.infura.io/v3/22156e2cbcd9492aa066ac25ccd14174");
     }
     myContract = web3.eth.Contract(myABI, myContractAddress, {

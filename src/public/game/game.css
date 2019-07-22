@@ -10,3 +10,12 @@ td {
     margin-left: 6px;
     margin-right: 6px;
 }
+
+.special-options-table {
+    width: 100%;
+}
+
+.special-option-button {
+    width: 25%;
+    height: 60px;
+}
