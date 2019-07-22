@@ -91,6 +91,24 @@ app.get('/createNewGame', (req, res) => {
     let gameName = req.query['gameName']
     res.json(gameName == 'x')
 })
+app.get('/useJokerCard', (req, res) => {
+    let pk = req.query['pk'];
+    res.json(pk % 2 == 0);
+})
+app.get('/useSwapCards', (req, res) => {
+    let pk = req.query['pk'];
+    let victimPk = req.query['victimPk'];
+    res.json(pk % 2 == 0);
+})
+app.get('/useSneakyPeaky', (req, res) => {
+    let pk = req.query['pk'];
+    let victimPk = req.query['victimPk'];
+    res.json(pk % 2 == 0);
+})
+app.get('/leaveGame', (req, res) => {
+    let pk = req.query['pk'];
+    res.json(true);
+})
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
 

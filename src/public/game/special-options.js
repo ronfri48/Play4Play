@@ -16,6 +16,8 @@ function useJokerCard() {
     fetchFromServer('useJokerCard', function (isSucceeded) {
         if (!isSucceeded) {
             alert('error. could not buy joker')
+        } else {
+            loadGame();
         }
     }, 'pk=' + pk)
 }
@@ -47,7 +49,7 @@ function useSneakyPeaky() {
 }
 
 function useSneakyPeakyOnPlayer() {
-    let victimPk;
+    let victimPk = document.getElementById('special-player-selector').value;
     let pk = document.cookie.substr('publicKey='.length, 40);
     fetchFromServer('useSneakyPeaky', function (isSucceeded) {
         if (!isSucceeded) {
@@ -61,7 +63,7 @@ function useSwapCards() {
 }
 
 function useSwapCardsOnPlayer() {
-    let victimPk;
+    let victimPk = document.getElementById('special-player-selector').value;
     let pk = document.cookie.substr('publicKey='.length, 40);
     fetchFromServer('useSwapCards', function (isSucceeded) {
         if (!isSucceeded) {
@@ -71,6 +73,7 @@ function useSwapCardsOnPlayer() {
 }
 
 function leaveGame() {
+    let pk = document.cookie.substr('publicKey='.length, 40);
     fetchFromServer('leaveGame', function (isSucceeded) {
         if (!isSucceeded) {
             alert('error. could not leave game')
