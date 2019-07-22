@@ -1,40 +1,48 @@
 const cardsInRow = 4;
-var web3js;
+var isGameOn = false;
 var cardTemplate = '<div class="card" style="width: 18rem;"><img src="CardImgSrc" class="card-img-top" alt="CardName"><div class="card-body"><h5 class="card-title">CardTitle</h5></div></div>';
-var serverAddress = 'http://localhost:3000'
-var getMyCardsFunction = '/getMyCards'
-var getMessagesFunction = '/getGameMessages'
-var getPlayersFunction = '/getPlayers'
+var serverAddress = 'http://localhost:3000/'
+var getMyCardsFunction = 'getMyCards'
+var getMessagesFunction = 'getGameMessages'
+var getPlayersFunction = 'getPlayers'
+var checkIfGameIsOnFunction = 'isGameOn'
+var requestCardsFunction = 'requestCards'
 var cardTypes = ['banks', 'basketball_teams', 'celebs', 'cities', 'food', 'football_teams', 'inventions', 'places', 'universities', 'words'];
 var currentGamePlayers;
 var pngFiles = ['macabi-tel-aviv', 'BeitarJerusalem', 'macabi-tel-aviv', 'Waze', 'mobileye', 'usb', 'sababa', 'GAME-OVER', 'hapoel_beer_sheva', 'hpaoel-jerusalem'];
 var technicalMessages = [{
     index: 0,
     message: 'connected to game',
-    function: loadGame
+    function: function () {
+        isGameOn = true;
+        loadGame();
+    }
 }, {
     index: 1,
     message: 'took cards from deck'
 }]
 
-function display_cards(cards) {
-    var cardsTable = document.getElementsByClassName("player-cards")
-    for (var i = 0; i < cards.length; i++) {
+
+function displayCards(cards) {
+    var cardsTable = document.getElementsByClassName("player-cards")[0]
+    cardsTable.innerHTML = ''
+    let cardIndex = 0;
+    for (var i = 0; cardIndex < cards.length; i++) {
         var tr = document.createElement('tr');
         for (var j = 0; j < cardsInRow; j++) {
             let cardIndex = cardsInRow * i + j
             if (cardIndex < cards.length) {
                 var card = document.createElement('td');
-                card.innerHTML = fill_card_details(cards[cardIndex]);
+                card.innerHTML = fillCardDetails(cards[cardIndex]);
                 tr.appendChild(card);
             }
         }
-        cardsTable[0].appendChild(tr);
+        cardsTable.appendChild(tr);
     }
 }
 
 
-function fill_card_details(cardValues) {
+function fillCardDetails(cardValues) {
     let innerHTML = cardTemplate;
     if (pngFiles.includes(cardValues['value'])) {
         innerHTML = innerHTML.replace('CardImgSrc', '/../../resources/cards/' + cardValues['type'] + '/' + cardValues['value'] + '.png')
@@ -75,13 +83,19 @@ function displayPlayers(players) {
     displaySelectors() //only now we can display the players
 }
 
-function fetchFromServer(functionName, callback) {
+function fetchFromServer(functionName, callback, parameterString) {
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function () {
         if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
             callback(JSON.parse(xmlHttp.responseText));
     }
-    xmlHttp.open("GET", serverAddress + functionName, true); // true for asynchronous 
+    if (parameterString) {
+        parameterString = '?' + parameterString;
+        xmlHttp.open("GET", serverAddress + functionName + parameterString, true);
+    } else {
+        xmlHttp.open("GET", serverAddress + functionName, true);
+    }
+
     xmlHttp.send(null);
 }
 
@@ -109,11 +123,16 @@ function requestCards() {
     let playerSelcted = document.getElementById('player-selector').value;
     let cardSelcted = document.getElementById('card-selector').value;
 
-    //do server work
+    fetchFromServer(requestCardsFunction, function (numberOfCards) {
+        if (numberOfCards > 0) {
+            loadGame()
+        } else {
+            updateMessages(['you got no cards from ' + playerSelcted])
+        }
+    }, 'player=' + playerSelcted + '&card=' + cardSelcted);
 }
 
 window.addEventListener('load', function () {
-    //get from contract if the game is started
     loadGame();
 
     setInterval(function () {
@@ -122,12 +141,17 @@ window.addEventListener('load', function () {
 })
 
 function loadGame() {
-    let isGameOn = false;
+    if (!isGameOn) {
+        fetchFromServer(checkIfGameIsOnFunction, function (resultFromServer) {
+            isGameOn = resultFromServer;
+            loadGame()
+        });
+    }
     let mainHeaderElement = document.getElementsByClassName('main-header')[0];
     if (isGameOn) {
         mainHeaderElement.innerHTML = 'Good Luck!';
         fetchFromServer(getPlayersFunction, displayPlayers);
-        fetchFromServer(getMyCardsFunction, display_cards);
+        fetchFromServer(getMyCardsFunction, displayCards);
     } else {
         mainHeaderElement.innerHTML = "Game has not started yet. Wait For more players";
     }

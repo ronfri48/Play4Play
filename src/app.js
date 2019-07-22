@@ -63,6 +63,15 @@ app.get('/getPlayers', (req, res) => {
     let messages = ['player1', 'player2', 'player3']
     res.json(messages)
 })
+app.get('/isGameOn', (req, res) => {
+    let messages = true
+    res.json(messages)
+})
+app.get('/requestCards', (req, res) => {
+    let player = req.query['player'];
+    let card = req.query['card'];
+    res.json(3)
+})
 
 
 
