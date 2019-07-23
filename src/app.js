@@ -4,7 +4,6 @@ const web3js = require('web3')
 const app = express()
 const port = 3000
 var myAccount;
-process.env.PWD = process.cwd()
 
 app.use(express.static('src/public'))
 app.use(express.static('src/node_modules'))
@@ -127,8 +126,6 @@ app.get('/payToUser',(req, res) =>{
         console.log(error);
         return res.send('Error ' + error)
     });
-    
-
 })
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
