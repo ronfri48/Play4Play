@@ -24,13 +24,12 @@ contract Quartet {
     address private _currentPlayer;
     uint256 private _numberOfPlayers;
     uint256 private _winBalance;
-    uint256 private _ethLimit = 1000000 wei;
+    uint256 private _ethLimit = 1000000000000 wei;
     uint256 private _jokerPrice = 2;
     uint256 private _watcherPrice = 3;
     uint256 private _swapperPrice = 4;
     Card[] private _moreCards;
     Card[] private _allCards;
-    QuartetCoin private _quartetCoin;
 
 
     ///-----------event logging-------------///
@@ -80,13 +79,11 @@ contract Quartet {
     }
 
     ///******constructor********///
-    constructor(address _coinAddress) public {
+    constructor() payable public {
         _currentPlayer = address(0x0);
         _winBalance = 0;
         _numberOfPlayers = 0;
         
-        _quartetCoin = QuartetCoin(_coinAddress);
-
         _allCards.push(new Card("Diskont", "Banks"));
         _allCards.push(new Card("Hapoalim", "Banks"));
         _allCards.push(new Card("OtzarHahayal", "Banks"));
@@ -202,7 +199,7 @@ contract Quartet {
         return false;
     }
 
-    function doesPlayerHasCardFromFamily(address _player, string memory _cardName) internal isPlayer(_player) returns (bool) {
+    function doesPlayerHasCardFromFamily(address _player, string memory _cardName) internal view isPlayer(_player) returns (bool) {
         string memory _cardFamily;
         Card[] memory _playerCards = _players[_player].cards;
 
@@ -308,7 +305,7 @@ contract Quartet {
         return _foundFours;
     }
 
-    function teardownGame() public hasGameFinished {
+    function teardownGame() public hasGameFinished returns (address, uint256){
         address _winningPlayer = address(0x0);
         uint maxFours = 0;
 
@@ -319,8 +316,8 @@ contract Quartet {
             }
         }
         
-        _quartetCoin.transfer(_winningPlayer, _winBalance);
         emit PlayerWithdrawal(address(this), _winningPlayer, _winBalance);
+        return (_winningPlayer, _winBalance);
     }
 
     function closeGame() public hasGameFinished areThereNoPlayers {
