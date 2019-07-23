@@ -1,5 +1,4 @@
 const express = require('express')
-const fs = require('file-system')
 const web3js = require('web3')
 
 const app = express()
@@ -10,8 +9,6 @@ process.env.PWD = process.cwd()
 app.use(express.static('src/public'))
 app.use(express.static('src/node_modules'))
 app.use(express.static('public'))
-app.use(express.static('/resources'))
-app.use(express.static('src/resources'))
 
 load_contract();
 
@@ -27,7 +24,6 @@ app.get('/getRandom', (req, res) => {
     });
 
 });
-
 app.get('/getMyCards', (req, res) => {
 
     //this is stub
@@ -46,10 +42,72 @@ app.get('/getMyCards', (req, res) => {
         {
             type: 'food',
             value: 'humus'
+        },
+        {
+            type: 'words',
+            value: 'basa'
+        },
+        {
+            type: 'words',
+            value: 'sababa'
         }
     ]
 
     res.json(cards);
+})
+app.get('/getGameMessages', (req, res) => {
+    let messages = ['player1 gave player2: hummus, bamba']
+    res.json(messages)
+})
+app.get('/getPlayers', (req, res) => {
+    let messages = ['player1', 'player2', 'player3']
+    res.json(messages)
+})
+app.get('/isGameOn', (req, res) => {
+    let messages = true
+    res.json(messages)
+})
+app.get('/requestCards', (req, res) => {
+    let player = req.query['player'];
+    let card = req.query['card'];
+    res.json(3)
+})
+app.get('/addToGame', (req, res) => {
+    let playerPk = req.query['pk'];
+    let gameIndex = req.query['gameIndex']
+    res.json(true)
+})
+app.get('/getListOfGames', (req, res) => {
+    let games = [{
+        Name: 'best game ever',
+        Players: 'Itzik, Micha, Shimon, Edna'
+    }, {
+        Name: 'greatet game ever',
+        Players: 'Netanel, Ron, Shmulik, Ziva'
+    }]
+    res.json(games)
+})
+app.get('/createNewGame', (req, res) => {
+    let gameName = req.query['gameName']
+    res.json(gameName == 'x')
+})
+app.get('/useJokerCard', (req, res) => {
+    let pk = req.query['pk'];
+    res.json(pk % 2 == 0);
+})
+app.get('/useSwapCards', (req, res) => {
+    let pk = req.query['pk'];
+    let victimPk = req.query['victimPk'];
+    res.json(pk % 2 == 0);
+})
+app.get('/useSneakyPeaky', (req, res) => {
+    let pk = req.query['pk'];
+    let victimPk = req.query['victimPk'];
+    res.json(pk % 2 == 0);
+})
+app.get('/leaveGame', (req, res) => {
+    let pk = req.query['pk'];
+    res.json(true);
 })
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
@@ -84,7 +142,6 @@ function load_contract() {
         var web3;
         web3 = new web3js(web3.currentProvider);
     } else {
-        // set the provider you want from Web3.providers
         web3 = new web3js("https://ropsten.infura.io/v3/22156e2cbcd9492aa066ac25ccd14174");
     }
     myContract = web3.eth.Contract(myABI, myContractAddress, {

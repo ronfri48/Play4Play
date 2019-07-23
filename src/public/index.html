@@ -2,11 +2,31 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="index.css">
-    <script language="javascript" type="text/javascript" src="connectToContract.js"></script>
+    <script language="javascript" type="text/javascript" src="index.js"></script>
 
 </head>
 
 <body>
+
+    <div class="modal show" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Hello!</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Please enter your public key</p>
+                    <input type="text" name="public-key" class="public-key-input"
+                        value="0x0000000000000000000000000000000000000000">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal"
+                        onclick="PlayButtonClicked()">Play</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <h1>
         Welcome to Play4Play!
     </h1>

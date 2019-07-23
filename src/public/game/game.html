@@ -4,10 +4,11 @@
     <link rel="stylesheet" type="text/css" href="/../index.css">
     <link rel="stylesheet" type="text/css" href="/game/game.css">
     <script src="/game/game.js" type="text/javascript"></script>
+    <script src="/game/special-options.js" type="text/javascript"></script>
 </head>
 
 <body>
-    <h1>
+    <h1 class="main-header">
         Good Luck!
     </h1>
 
@@ -17,7 +18,68 @@
         <a class="navbar-brand navbar-padding" href="/join-game/join-game.html">Join A Game</a>
         <a class="navbar-brand navbar-padding" href="/game/game.html">Your Current Game</a>
     </nav>
+
+    <h4 id='player-list'>Players in the game: </h4>
+    <div class="selectors-div">
+        <h4 class="side-margin">Request Type: </h4>
+
+        <select id='card-selector'>
+        </select>
+
+        <h4 class="side-margin"> From Player: </h4>
+
+        <select id='player-selector'>
+        </select>
+
+        <button id="request-cards-button" class="side-margin btn btn-primary btn-sm" onclick="requestCards()">Request
+            Cards</button>
+    </div>
+
+    <table class="special-options-table">
+        <tr>
+            <td>
+                <button class="btn btn-primary special-option-button" onclick="useJokerCard()">Buy & use joker
+                    card</button>
+            </td>
+            <td>
+                <button class="btn btn-primary special-option-button" onclick="useSneakyPeaky()">Buy & use sneaky
+                    peaky</button>
+            </td>
+            <td>
+                <button class="btn btn-primary special-option-button" onclick="useSwapCards()">Buy & use swapping
+                    cards</button>
+            </td>
+            <td>
+                <button class="btn btn-danger special-option-button" onclick="leaveGame()">Leave game</button>
+            </td>
+        </tr>
+
+    </table>
+
     <table class="player-cards">
 
     </table>
+    <div id="info-message-area">
+
+    </div>
+
+
+    <div class="modal hide" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Buy And Use Special Option</h5>
+                </div>
+                <div class="modal-body">
+                    <p class="special-option-message"></p>
+                    <select class="hide" id='special-player-selector'>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button id="choose-player-button" type="button" class="btn btn-primary"
+                        data-dismiss="modal">Choose</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
