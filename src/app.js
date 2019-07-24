@@ -4,53 +4,24 @@ const web3js = require('web3')
 const app = express()
 const port = 3000
 var myAccount;
+var web3;
 
 app.use(express.static('src/public'))
 app.use(express.static('src/node_modules'))
 app.use(express.static('public'))
 
-app.get('/getRandom', (req, res) => {
-    myContract.methods.getRandom.call({
-        gas: '41907'
-    }).then(function (result) {
+
+app.get('/getMyCards', (req, res) => {
+    let input = {
+        _player: '\"' + web3.utils.toHex(myAccount) + '\"'
+    }
+    gameContract.methods.getPlayerCards(input).call().then(function (result) {
         console.log(result);
         return res.send(result);
     }).catch(function (error) {
         console.log(error);
         return res.send('Error ' + error)
     });
-
-});
-app.get('/getMyCards', (req, res) => {
-
-    //this is stub
-    cards = [{
-            type: 'banks',
-            value: 'diskont'
-        },
-        {
-            type: 'cities',
-            value: 'jerusalem'
-        },
-        {
-            type: 'food',
-            value: 'bamba'
-        },
-        {
-            type: 'food',
-            value: 'humus'
-        },
-        {
-            type: 'words',
-            value: 'basa'
-        },
-        {
-            type: 'words',
-            value: 'sababa'
-        }
-    ]
-
-    res.json(cards);
 })
 app.get('/getGameMessages', (req, res) => {
     let messages = ['player1 gave player2: hummus, bamba']
@@ -61,14 +32,14 @@ app.get('/getPlayers', (req, res) => {
     res.json(messages)
 })
 app.get('/isGameOn', (req, res) => {
-    let messages = true
+    let messages = true;
     res.json(messages)
 })
 app.get('/requestCards', (req, res) => {
     let player = req.query['player'];
     let card = req.query['card'];
 
-    
+
 })
 app.get('/addToGame', (req, res) => {
     let playerPk = req.query['pk'];
@@ -81,7 +52,7 @@ app.get('/addToGame', (req, res) => {
     gameContract.methods.registerIntoGame.call({
         gas: '41907',
         _playerName: playerPk,
-        gameIndex: ,
+        gameIndex: 6, //TODO: chage this
     }).then(function (result) {
         console.log(result);
         return res.send(result);
@@ -877,7 +848,7 @@ function load_contract(account) {
 
 
     if (typeof web3 !== 'undefined') {
-        var web3;
+
         web3 = new web3js(web3.currentProvider);
     } else {
         web3 = new web3js("https://ropsten.infura.io/v3/22156e2cbcd9492aa066ac25ccd14174");
@@ -885,6 +856,7 @@ function load_contract(account) {
     gameContract = web3.eth.Contract(gameABI, gameContractAddress, {
         defaultAccount: account
     });
+    
     coinContract = web3.eth.Contract(coinABI, coinContractAddress, {
         defaultAccount: account
     });
