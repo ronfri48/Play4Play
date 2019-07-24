@@ -90,17 +90,64 @@ app.get('/createNewGame', (req, res) => {
 })
 app.get('/useJokerCard', (req, res) => {
     let pk = req.query['pk'];
-    res.json(pk % 2 == 0);
+    if (pk != myAccount) {
+        res.status(400).json('user cant run functions behalf of other user')
+    }
+    gameContract.methods.buyJoker.call({}).then(function (result) {
+        console.log(result);
+        return res.send(result);
+    }).catch(function (error) {
+        console.log(error);
+        return res.send('Error ' + error)
+    });
 })
 app.get('/useSwapCards', (req, res) => {
     let pk = req.query['pk'];
     let victimPk = req.query['victimPk'];
-    res.json(pk % 2 == 0);
+    if (pk != myAccount) {
+        res.status(400).json('user cant run functions behalf of other user')
+    }
+    gameContract.methods.buySwapper.call({}).then(function (result) {
+        console.log(result);
+        gameContract.methods.SwapperUsed.call({
+            _player: pk,
+            _swappedPlayer: victimPk
+        }).then(function (result) {
+            console.log(result);
+            return res.send(result);
+        }).catch(function (error) {
+            console.log(error);
+            return res.send('Error ' + error)
+        });
+    }).catch(function (error) {
+        console.log(error);
+        return res.send('Error ' + error)
+    });
 })
 app.get('/useSneakyPeaky', (req, res) => {
     let pk = req.query['pk'];
     let victimPk = req.query['victimPk'];
-    res.json(pk % 2 == 0);
+
+    if (pk != myAccount) {
+        res.status(400).json('user cant run functions behalf of other user')
+    }
+
+    gameContract.methods.buyWatcher.call({}).then(function (result) {
+        console.log(result);
+        gameContract.methods.WatcherUsed.call({
+            _player: pk,
+            _watchedPlayer: victimPk
+        }).then(function (result) {
+            console.log(result);
+            return res.send(result);
+        }).catch(function (error) {
+            console.log(error);
+            return res.send('Error ' + error)
+        });
+    }).catch(function (error) {
+        console.log(error);
+        return res.send('Error ' + error)
+    });
 })
 app.get('/leaveGame', (req, res) => {
     let pk = req.query['pk'];
@@ -111,7 +158,7 @@ app.get('/setPK', (req, res) => {
     load_contract(pk);
     res.json(true);
 })
-app.get('/payToUser',(req, res) =>{
+app.get('/payToUser', (req, res) => {
     let amount = req.query['amount']
     let to = req.query['to']
 
@@ -449,7 +496,356 @@ function load_contract(account) {
         }
     ]
     var gameContractAddress = '';
-    var gameABI = [];
+    var gameABI = [{
+            "constant": false,
+            "inputs": [],
+            "name": "buyJoker",
+            "outputs": [],
+            "payable": true,
+            "stateMutability": "payable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [{
+                "name": "_player",
+                "type": "address"
+            }],
+            "name": "getPlayerCardsHashes",
+            "outputs": [{
+                "name": "",
+                "type": "bytes32[]"
+            }],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [],
+            "name": "buySwapper",
+            "outputs": [],
+            "payable": true,
+            "stateMutability": "payable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [],
+            "name": "teardownGame",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [],
+            "name": "exitGame",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [{
+                    "name": "_player",
+                    "type": "address"
+                },
+                {
+                    "name": "_numberOfJokersToUse",
+                    "type": "uint256"
+                }
+            ],
+            "name": "findFours",
+            "outputs": [{
+                "name": "",
+                "type": "string[]"
+            }],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [{
+                "name": "_playerToWatch",
+                "type": "address"
+            }],
+            "name": "watchCards",
+            "outputs": [{
+                "name": "",
+                "type": "address[]"
+            }],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [],
+            "name": "closeGame",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [{
+                "name": "_player",
+                "type": "address"
+            }],
+            "name": "getPrettyPlayerCards",
+            "outputs": [{
+                "name": "",
+                "type": "string[]"
+            }],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [],
+            "name": "evenGame",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [{
+                "name": "_name",
+                "type": "string"
+            }],
+            "name": "getHashForCard",
+            "outputs": [{
+                "name": "",
+                "type": "bytes32"
+            }],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [{
+                "name": "_playerName",
+                "type": "string"
+            }],
+            "name": "registerIntoGame",
+            "outputs": [{
+                "name": "",
+                "type": "string"
+            }],
+            "payable": true,
+            "stateMutability": "payable",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [{
+                "name": "_player",
+                "type": "address"
+            }],
+            "name": "getPlayerCards",
+            "outputs": [{
+                "name": "",
+                "type": "address[]"
+            }],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [{
+                "name": "_player",
+                "type": "address"
+            }],
+            "name": "goToNextPlayer",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [],
+            "name": "buyWatcher",
+            "outputs": [],
+            "payable": true,
+            "stateMutability": "payable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [{
+                    "name": "_src",
+                    "type": "address"
+                },
+                {
+                    "name": "_cardName",
+                    "type": "string"
+                }
+            ],
+            "name": "moveCard",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [{
+                "name": "_playerToSwapWith",
+                "type": "address"
+            }],
+            "name": "swapCards",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [{
+                "name": "_coinAddress",
+                "type": "address"
+            }],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+        },
+        {
+            "payable": true,
+            "stateMutability": "payable",
+            "type": "fallback"
+        },
+        {
+            "anonymous": false,
+            "inputs": [{
+                    "indexed": false,
+                    "name": "_contract",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "name": "_player",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "name": "_amount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "PlayerDeposit",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [{
+                    "indexed": false,
+                    "name": "_contract",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "name": "_player",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "name": "_amount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "PlayerWithdrawal",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [{
+                    "indexed": false,
+                    "name": "_src",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "name": "_dst",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "name": "_cardName",
+                    "type": "string"
+                }
+            ],
+            "name": "CardMove",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [{
+                    "indexed": false,
+                    "name": "_player",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "name": "_cardFamily",
+                    "type": "string"
+                }
+            ],
+            "name": "FourFound",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [{
+                "indexed": false,
+                "name": "_player",
+                "type": "address"
+            }],
+            "name": "JokerUsed",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [{
+                    "indexed": false,
+                    "name": "_player",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "name": "_swappedPlayer",
+                    "type": "address"
+                }
+            ],
+            "name": "SwapperUsed",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [{
+                    "indexed": false,
+                    "name": "_player",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "name": "_watchedPlayer",
+                    "type": "address"
+                }
+            ],
+            "name": "WatcherUsed",
+            "type": "event"
+        }
+    ];
 
 
     if (typeof web3 !== 'undefined') {
