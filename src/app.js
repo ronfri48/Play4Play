@@ -12,10 +12,12 @@ app.use(express.static('public'))
 
 
 app.get('/getMyCards', (req, res) => {
-    let input = {
-        _player: '\"' + web3.utils.toHex(myAccount) + '\"'
-    }
-    gameContract.methods.getPlayerCards(input).call().then(function (result) {
+    let input = web3.utils.toHex('0x3EE54CF657411F96A956344f08683f2a550d5869')
+    let xgas = web3.utils.toHex(30000)
+
+    gameContract.methods.getPlayerCards(input).call({
+        gas: xgas
+    }).then(function (result) {
         console.log(result);
         return res.send(result);
     }).catch(function (error) {
@@ -494,8 +496,9 @@ function load_contract(account) {
             "type": "function"
         }
     ]
-    var gameContractAddress = '';
-    var gameABI = [{
+    var gameContractAddress = '0x2a1a4dc9cc7943dd8a2bda43ff0aaca08448c57b';
+    var gameABI = [
+        {
             "constant": false,
             "inputs": [],
             "name": "buyJoker",
@@ -506,15 +509,19 @@ function load_contract(account) {
         },
         {
             "constant": false,
-            "inputs": [{
-                "name": "_player",
-                "type": "address"
-            }],
+            "inputs": [
+                {
+                    "name": "_player",
+                    "type": "address"
+                }
+            ],
             "name": "getPlayerCardsHashes",
-            "outputs": [{
-                "name": "",
-                "type": "bytes32[]"
-            }],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "bytes32[]"
+                }
+            ],
             "payable": false,
             "stateMutability": "nonpayable",
             "type": "function"
@@ -532,7 +539,16 @@ function load_contract(account) {
             "constant": false,
             "inputs": [],
             "name": "teardownGame",
-            "outputs": [],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "address"
+                },
+                {
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
             "payable": false,
             "stateMutability": "nonpayable",
             "type": "function"
@@ -548,7 +564,8 @@ function load_contract(account) {
         },
         {
             "constant": false,
-            "inputs": [{
+            "inputs": [
+                {
                     "name": "_player",
                     "type": "address"
                 },
@@ -558,27 +575,72 @@ function load_contract(account) {
                 }
             ],
             "name": "findFours",
-            "outputs": [{
-                "name": "",
-                "type": "string[]"
-            }],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "string[]"
+                }
+            ],
             "payable": false,
             "stateMutability": "nonpayable",
             "type": "function"
         },
         {
             "constant": false,
-            "inputs": [{
-                "name": "_playerToWatch",
-                "type": "address"
-            }],
+            "inputs": [
+                {
+                    "name": "_playerToWatch",
+                    "type": "address"
+                }
+            ],
             "name": "watchCards",
-            "outputs": [{
-                "name": "",
-                "type": "address[]"
-            }],
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "name": "family",
+                            "type": "string"
+                        }
+                    ],
+                    "name": "",
+                    "type": "tuple[]"
+                }
+            ],
             "payable": false,
             "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "components": [
+                        {
+                            "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "name": "family",
+                            "type": "string"
+                        }
+                    ],
+                    "name": "_card",
+                    "type": "tuple"
+                }
+            ],
+            "name": "getHash",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "bytes32"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
             "type": "function"
         },
         {
@@ -592,15 +654,19 @@ function load_contract(account) {
         },
         {
             "constant": false,
-            "inputs": [{
-                "name": "_player",
-                "type": "address"
-            }],
+            "inputs": [
+                {
+                    "name": "_player",
+                    "type": "address"
+                }
+            ],
             "name": "getPrettyPlayerCards",
-            "outputs": [{
-                "name": "",
-                "type": "string[]"
-            }],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "string[]"
+                }
+            ],
             "payable": false,
             "stateMutability": "nonpayable",
             "type": "function"
@@ -616,55 +682,107 @@ function load_contract(account) {
         },
         {
             "constant": true,
-            "inputs": [{
-                "name": "_name",
-                "type": "string"
-            }],
+            "inputs": [
+                {
+                    "name": "_name",
+                    "type": "string"
+                }
+            ],
             "name": "getHashForCard",
-            "outputs": [{
-                "name": "",
-                "type": "bytes32"
-            }],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "bytes32"
+                }
+            ],
             "payable": false,
             "stateMutability": "view",
             "type": "function"
         },
         {
             "constant": false,
-            "inputs": [{
-                "name": "_playerName",
-                "type": "string"
-            }],
+            "inputs": [
+                {
+                    "name": "_playerName",
+                    "type": "string"
+                }
+            ],
             "name": "registerIntoGame",
-            "outputs": [{
-                "name": "",
-                "type": "string"
-            }],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "string"
+                }
+            ],
             "payable": true,
             "stateMutability": "payable",
             "type": "function"
         },
         {
             "constant": true,
-            "inputs": [{
-                "name": "_player",
-                "type": "address"
-            }],
+            "inputs": [
+                {
+                    "name": "_player",
+                    "type": "address"
+                }
+            ],
             "name": "getPlayerCards",
-            "outputs": [{
-                "name": "",
-                "type": "address[]"
-            }],
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "name": "family",
+                            "type": "string"
+                        }
+                    ],
+                    "name": "",
+                    "type": "tuple[]"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "isGameRunning",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "getPlayersNames",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "string[]"
+                }
+            ],
             "payable": false,
             "stateMutability": "view",
             "type": "function"
         },
         {
             "constant": false,
-            "inputs": [{
-                "name": "_player",
-                "type": "address"
-            }],
+            "inputs": [
+                {
+                    "name": "_player",
+                    "type": "address"
+                }
+            ],
             "name": "goToNextPlayer",
             "outputs": [],
             "payable": false,
@@ -682,7 +800,8 @@ function load_contract(account) {
         },
         {
             "constant": false,
-            "inputs": [{
+            "inputs": [
+                {
                     "name": "_src",
                     "type": "address"
                 },
@@ -699,10 +818,12 @@ function load_contract(account) {
         },
         {
             "constant": false,
-            "inputs": [{
-                "name": "_playerToSwapWith",
-                "type": "address"
-            }],
+            "inputs": [
+                {
+                    "name": "_playerToSwapWith",
+                    "type": "address"
+                }
+            ],
             "name": "swapCards",
             "outputs": [],
             "payable": false,
@@ -710,12 +831,9 @@ function load_contract(account) {
             "type": "function"
         },
         {
-            "inputs": [{
-                "name": "_coinAddress",
-                "type": "address"
-            }],
-            "payable": false,
-            "stateMutability": "nonpayable",
+            "inputs": [],
+            "payable": true,
+            "stateMutability": "payable",
             "type": "constructor"
         },
         {
@@ -725,7 +843,8 @@ function load_contract(account) {
         },
         {
             "anonymous": false,
-            "inputs": [{
+            "inputs": [
+                {
                     "indexed": false,
                     "name": "_contract",
                     "type": "address"
@@ -746,7 +865,8 @@ function load_contract(account) {
         },
         {
             "anonymous": false,
-            "inputs": [{
+            "inputs": [
+                {
                     "indexed": false,
                     "name": "_contract",
                     "type": "address"
@@ -767,7 +887,8 @@ function load_contract(account) {
         },
         {
             "anonymous": false,
-            "inputs": [{
+            "inputs": [
+                {
                     "indexed": false,
                     "name": "_src",
                     "type": "address"
@@ -788,7 +909,8 @@ function load_contract(account) {
         },
         {
             "anonymous": false,
-            "inputs": [{
+            "inputs": [
+                {
                     "indexed": false,
                     "name": "_player",
                     "type": "address"
@@ -804,17 +926,20 @@ function load_contract(account) {
         },
         {
             "anonymous": false,
-            "inputs": [{
-                "indexed": false,
-                "name": "_player",
-                "type": "address"
-            }],
+            "inputs": [
+                {
+                    "indexed": false,
+                    "name": "_player",
+                    "type": "address"
+                }
+            ],
             "name": "JokerUsed",
             "type": "event"
         },
         {
             "anonymous": false,
-            "inputs": [{
+            "inputs": [
+                {
                     "indexed": false,
                     "name": "_player",
                     "type": "address"
@@ -830,7 +955,8 @@ function load_contract(account) {
         },
         {
             "anonymous": false,
-            "inputs": [{
+            "inputs": [
+                {
                     "indexed": false,
                     "name": "_player",
                     "type": "address"
@@ -844,8 +970,7 @@ function load_contract(account) {
             "name": "WatcherUsed",
             "type": "event"
         }
-    ];
-
+    ]
 
     if (typeof web3 !== 'undefined') {
 
@@ -856,7 +981,7 @@ function load_contract(account) {
     gameContract = web3.eth.Contract(gameABI, gameContractAddress, {
         defaultAccount: account
     });
-    
+
     coinContract = web3.eth.Contract(coinABI, coinContractAddress, {
         defaultAccount: account
     });
