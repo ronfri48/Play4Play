@@ -67,12 +67,29 @@ app.get('/isGameOn', (req, res) => {
 app.get('/requestCards', (req, res) => {
     let player = req.query['player'];
     let card = req.query['card'];
-    res.json(3)
+
+    
 })
 app.get('/addToGame', (req, res) => {
     let playerPk = req.query['pk'];
-    let gameIndex = req.query['gameIndex']
-    res.json(true)
+    let gameIndex = req.query['gameIndex'];
+
+    if (pk != myAccount) {
+        res.status(400).json('user cant run functions behalf of other user')
+    }
+
+    gameContract.methods.registerIntoGame.call({
+        gas: '41907',
+        _playerName: playerPk,
+        gameIndex: ,
+    }).then(function (result) {
+        console.log(result);
+        return res.send(result);
+    }).catch(function (error) {
+        console.log(error);
+        return res.send('Error ' + error)
+    });
+
 })
 app.get('/getListOfGames', (req, res) => {
     let games = [{
@@ -151,7 +168,18 @@ app.get('/useSneakyPeaky', (req, res) => {
 })
 app.get('/leaveGame', (req, res) => {
     let pk = req.query['pk'];
-    res.json(true);
+
+    if (pk != myAccount) {
+        res.status(400).json('user cant run functions behalf of other user')
+    }
+
+    gameContract.methods.teardownGame.call({}).then(function (result) {
+        console.log(result);
+        return res.send(result);
+    }).catch(function (error) {
+        console.log(error);
+        return res.send('Error ' + error)
+    });
 })
 app.get('/setPK', (req, res) => {
     let pk = req.query['pk'];
