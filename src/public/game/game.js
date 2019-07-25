@@ -60,15 +60,17 @@ function fillCardDetails(cardValues) {
 function updateMessages(messages) {
     let messageArea = document.getElementById('info-message-area')
     messageArea.innerHTML = ""
-    for (let i = 0; i < messages.length; i++) {
-        if (technicalMessages.map(x => x['message']).includes(messages[i])) {
-            technicalMessages.find(x => x['message'] === messages[i])['function']();
+    if (messages != null) {
+        for (let i = 0; i < messages.length; i++) {
+            if (technicalMessages.map(x => x['message']).includes(messages[i])) {
+                technicalMessages.find(x => x['message'] === messages[i])['function']();
+            }
+            let messageElement = document.createElement('DIV')
+            messageElement.className = 'alert alert-info'
+            messageElement.role = 'alert'
+            messageElement.textContent = messages[i]
+            messageArea.appendChild(messageElement)
         }
-        let messageElement = document.createElement('DIV')
-        messageElement.className = 'alert alert-info'
-        messageElement.role = 'alert'
-        messageElement.textContent = messages[i]
-        messageArea.appendChild(messageElement)
     }
 }
 

@@ -12,7 +12,7 @@ var specialOptionsData = [{
 }]
 
 function useJokerCard() {
-    let pk = document.cookie.substr('publicKey='.length, 40);
+    let pk = document.cookie.substr('publicKey='.length);
     fetchFromServer('useJokerCard', function (isSucceeded) {
         if (!isSucceeded) {
             alert('error. could not buy joker')
@@ -50,7 +50,7 @@ function useSneakyPeaky() {
 
 function useSneakyPeakyOnPlayer() {
     let victimPk = document.getElementById('special-player-selector').value;
-    let pk = document.cookie.substr('publicKey='.length, 40);
+    let pk = document.cookie.substr('publicKey='.length);
     fetchFromServer('useSneakyPeaky', function (isSucceeded) {
         if (!isSucceeded) {
             alert('error. could not buy sneaky peaky')
@@ -64,7 +64,7 @@ function useSwapCards() {
 
 function useSwapCardsOnPlayer() {
     let victimPk = document.getElementById('special-player-selector').value;
-    let pk = document.cookie.substr('publicKey='.length, 40);
+    let pk = document.cookie.substr('publicKey='.length);
     fetchFromServer('useSwapCards', function (isSucceeded) {
         if (!isSucceeded) {
             alert('error. could not buy swap cards')
@@ -73,7 +73,7 @@ function useSwapCardsOnPlayer() {
 }
 
 function leaveGame() {
-    let pk = document.cookie.substr('publicKey='.length, 40);
+    let pk = document.cookie.substr('publicKey='.length);
     fetchFromServer('leaveGame', function (isSucceeded) {
         if (!isSucceeded) {
             alert('error. could not leave game')
