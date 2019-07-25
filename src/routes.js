@@ -1,4 +1,4 @@
-const defaultResults = require('./defaults.js')
+const defaultResults = require('./defaults.js');
 const web3js = require('web3');
 var config = require('./config.js');
 var express = require('express');
@@ -12,6 +12,9 @@ router.get('/getMyCards', (req, res) => {
         gas: gas
     }).then(function (result) {
         console.log(result);
+        if (result === null) {
+            result = defaultResults.getMyCards
+        }
         return res.send(result);
     }).catch(function (error) {
         console.log(error);
@@ -19,11 +22,11 @@ router.get('/getMyCards', (req, res) => {
     });
 })
 router.get('/getGameMessages', (req, res) => {
-    let messages = ['player1 gave player2: hummus, bamba']
+    let messages = null; //['player1 gave player2: hummus, bamba'];
     res.json(messages)
 })
 router.get('/getPlayers', (req, res) => {
-    let messages = ['player1', 'player2', 'player3']
+    let messages = ['Ron', 'Shmulik', 'Ziva']
     res.json(messages)
 })
 router.get('/isGameOn', (req, res) => {
@@ -33,8 +36,6 @@ router.get('/isGameOn', (req, res) => {
 router.get('/requestCards', (req, res) => {
     let player = req.query['player'];
     let card = req.query['card'];
-
-
 })
 router.get('/addToGame', (req, res) => {
     let playerPk = req.query['pk'];
@@ -48,6 +49,9 @@ router.get('/addToGame', (req, res) => {
         gas: gas
     }).then(function (result) {
         console.log(result);
+        if (result === null) {
+            result = defaultResults.addToGame
+        }
         return res.send(result);
     }).catch(function (error) {
         console.log(error);
@@ -78,6 +82,9 @@ router.get('/useJokerCard', (req, res) => {
         gas: gas
     }).then(function (result) {
         console.log(result);
+        if (result === null) {
+            result = defaultResults.useJokerCard
+        }
         return res.send(result);
     }).catch(function (error) {
         console.log(error);
@@ -98,6 +105,9 @@ router.get('/useSwapCards', (req, res) => {
             gas: gas
         }).then(function (result) {
             console.log(result);
+            if (result === null) {
+                result = defaultResults.useSwapCards
+            }
             return res.send(result);
         }).catch(function (error) {
             console.log(error);
@@ -124,6 +134,9 @@ router.get('/useSneakyPeaky', (req, res) => {
             gas: gas
         }).then(function (result) {
             console.log(result);
+            if (result === null) {
+                result = defaultResults.useSneakyPeaky
+            }
             return res.send(result);
         }).catch(function (error) {
             console.log(error);
@@ -145,6 +158,9 @@ router.get('/leaveGame', (req, res) => {
         gas: gas
     }).then(function (result) {
         console.log(result);
+        if (result === null) {
+            result = defaultResults.leaveGame
+        }
         return res.send(result);
     }).catch(function (error) {
         console.log(error);
@@ -164,6 +180,9 @@ router.get('/payToUser', (req, res) => {
         gas: gas
     }).then(function (result) {
         console.log(result);
+        if (result === null) {
+            result = defaultResults.payToUser
+        }
         return res.send(result);
     }).catch(function (error) {
         console.log(error);
