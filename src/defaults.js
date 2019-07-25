@@ -22,6 +22,7 @@ var defaults = {
     useSwapCards: true,
     useSneakyPeaky: true,
     leaveGame: true,
-    payToUser: true
+    payToUser: true,
+    moveCard: false
 }
 module.exports = defaults

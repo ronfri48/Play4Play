@@ -2,6 +2,8 @@ const defaultResults = require('./defaults.js');
 const web3js = require('web3');
 var config = require('./config.js');
 var express = require('express');
+var MerkleTree = require('merkletreejs');
+var SHA256 = require("crypto-js/sha256");
 var router = express.Router();
 var myAccount;
 
@@ -36,6 +38,17 @@ router.get('/isGameOn', (req, res) => {
 router.get('/requestCards', (req, res) => {
     let player = req.query['player'];
     let card = req.query['card'];
+
+    gameContract.methods.moveCard(player, card).call({
+        gas: gas
+    }).then(function (cardRequested) {
+        console.log(cardRequested);
+        let result = checkTurn(cardRequested, player);
+        return res.send(result);
+    }).catch(function (error) {
+        console.log(error);
+        return res.send('Error ' + error)
+    });
 })
 router.get('/addToGame', (req, res) => {
     let playerPk = req.query['pk'];
@@ -211,5 +224,39 @@ function loadContract(account) {
         defaultAccount: account
     });
 }
+
+function QuartetHash(object) {
+    return SHA256(JSON.stringify(object));
+}
+
+function generateMerkleTree(hashedLeaves) {
+    return new MerkleTree.MerkleTree(hashedLeaves, QuartetHash, options = {
+        hashLeaves: false
+    });
+}
+
+function verifyValue(tree, valueToSearch) {
+    let root = tree.getRoot();
+    let proofNodes = tree.getRoot();
+
+    return tree.verify(proofNodes, valueToSearch, root)
+}
+
+function checkTurn(cardRequested, player) {
+    //if didnt get the card but it was found in the players hand
+    if (cardRequested == null) {
+        gameContract.methods.getPlayerCardsHashes(player).call({
+            gas: gas
+        }).then(function (playersHashedCards) {
+            let tree = generateMerkleTree(playersHashedCards);
+            let found = verifyValue(tree, cardRequested);
+            return !found;
+        }).catch(function (error) {
+            console.log(error);
+            return res.send('Error ' + error)
+        });
+    }
+}
+
 
 module.exports = router;
