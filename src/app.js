@@ -5,6 +5,7 @@ const app = express()
 const port = 3000
 var myAccount;
 var web3;
+var gas = 23000;
 
 app.use(express.static('src/public'))
 app.use(express.static('src/node_modules'))
@@ -13,10 +14,9 @@ app.use(express.static('public'))
 
 app.get('/getMyCards', (req, res) => {
     let input = web3.utils.toHex('0x3EE54CF657411F96A956344f08683f2a550d5869')
-    let xgas = web3.utils.toHex(30000)
 
     gameContract.methods.getPlayerCards(input).call({
-        gas: xgas
+        gas: gas
     }).then(function (result) {
         console.log(result);
         return res.send(result);
@@ -51,10 +51,8 @@ app.get('/addToGame', (req, res) => {
         res.status(400).json('user cant run functions behalf of other user')
     }
 
-    gameContract.methods.registerIntoGame.call({
-        gas: '41907',
-        _playerName: playerPk,
-        gameIndex: 6, //TODO: chage this
+    gameContract.methods.registerIntoGame(playerPk, 6).call({ //TODO: chage this 6 constant
+        gas: gas
     }).then(function (result) {
         console.log(result);
         return res.send(result);
@@ -83,7 +81,9 @@ app.get('/useJokerCard', (req, res) => {
     if (pk != myAccount) {
         res.status(400).json('user cant run functions behalf of other user')
     }
-    gameContract.methods.buyJoker.call({}).then(function (result) {
+    gameContract.methods.buyJoker().call({
+        gas: gas
+    }).then(function (result) {
         console.log(result);
         return res.send(result);
     }).catch(function (error) {
@@ -97,11 +97,12 @@ app.get('/useSwapCards', (req, res) => {
     if (pk != myAccount) {
         res.status(400).json('user cant run functions behalf of other user')
     }
-    gameContract.methods.buySwapper.call({}).then(function (result) {
+    gameContract.methods.buySwapper().call({
+        gas: gas
+    }).then(function (result) {
         console.log(result);
-        gameContract.methods.SwapperUsed.call({
-            _player: pk,
-            _swappedPlayer: victimPk
+        gameContract.methods.SwapperUsed(pk, victimPk).call({
+            gas: gas
         }).then(function (result) {
             console.log(result);
             return res.send(result);
@@ -122,11 +123,12 @@ app.get('/useSneakyPeaky', (req, res) => {
         res.status(400).json('user cant run functions behalf of other user')
     }
 
-    gameContract.methods.buyWatcher.call({}).then(function (result) {
+    gameContract.methods.buyWatcher().call({
+        gas: gas
+    }).then(function (result) {
         console.log(result);
-        gameContract.methods.WatcherUsed.call({
-            _player: pk,
-            _watchedPlayer: victimPk
+        gameContract.methods.WatcherUsed(pk, victimPk).call({
+            gas: gas
         }).then(function (result) {
             console.log(result);
             return res.send(result);
@@ -146,7 +148,9 @@ app.get('/leaveGame', (req, res) => {
         res.status(400).json('user cant run functions behalf of other user')
     }
 
-    gameContract.methods.teardownGame.call({}).then(function (result) {
+    gameContract.methods.teardownGame().call({
+        gas: gas
+    }).then(function (result) {
         console.log(result);
         return res.send(result);
     }).catch(function (error) {
@@ -163,10 +167,8 @@ app.get('/payToUser', (req, res) => {
     let amount = req.query['amount']
     let to = req.query['to']
 
-    coinContract.methods.transfer.call({
-        gas: '41907',
-        recipient: to,
-        amount: amount
+    coinContract.methods.transfer(to, amount).call({
+        gas: gas
     }).then(function (result) {
         console.log(result);
         return res.send(result);
@@ -497,8 +499,7 @@ function load_contract(account) {
         }
     ]
     var gameContractAddress = '0x2a1a4dc9cc7943dd8a2bda43ff0aaca08448c57b';
-    var gameABI = [
-        {
+    var gameABI = [{
             "constant": false,
             "inputs": [],
             "name": "buyJoker",
@@ -509,19 +510,15 @@ function load_contract(account) {
         },
         {
             "constant": false,
-            "inputs": [
-                {
-                    "name": "_player",
-                    "type": "address"
-                }
-            ],
+            "inputs": [{
+                "name": "_player",
+                "type": "address"
+            }],
             "name": "getPlayerCardsHashes",
-            "outputs": [
-                {
-                    "name": "",
-                    "type": "bytes32[]"
-                }
-            ],
+            "outputs": [{
+                "name": "",
+                "type": "bytes32[]"
+            }],
             "payable": false,
             "stateMutability": "nonpayable",
             "type": "function"
@@ -539,8 +536,7 @@ function load_contract(account) {
             "constant": false,
             "inputs": [],
             "name": "teardownGame",
-            "outputs": [
-                {
+            "outputs": [{
                     "name": "",
                     "type": "address"
                 },
@@ -564,8 +560,7 @@ function load_contract(account) {
         },
         {
             "constant": false,
-            "inputs": [
-                {
+            "inputs": [{
                     "name": "_player",
                     "type": "address"
                 },
@@ -575,70 +570,58 @@ function load_contract(account) {
                 }
             ],
             "name": "findFours",
-            "outputs": [
-                {
-                    "name": "",
-                    "type": "string[]"
-                }
-            ],
+            "outputs": [{
+                "name": "",
+                "type": "string[]"
+            }],
             "payable": false,
             "stateMutability": "nonpayable",
             "type": "function"
         },
         {
             "constant": false,
-            "inputs": [
-                {
-                    "name": "_playerToWatch",
-                    "type": "address"
-                }
-            ],
+            "inputs": [{
+                "name": "_playerToWatch",
+                "type": "address"
+            }],
             "name": "watchCards",
-            "outputs": [
-                {
-                    "components": [
-                        {
-                            "name": "name",
-                            "type": "string"
-                        },
-                        {
-                            "name": "family",
-                            "type": "string"
-                        }
-                    ],
-                    "name": "",
-                    "type": "tuple[]"
-                }
-            ],
+            "outputs": [{
+                "components": [{
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "name": "family",
+                        "type": "string"
+                    }
+                ],
+                "name": "",
+                "type": "tuple[]"
+            }],
             "payable": false,
             "stateMutability": "nonpayable",
             "type": "function"
         },
         {
             "constant": true,
-            "inputs": [
-                {
-                    "components": [
-                        {
-                            "name": "name",
-                            "type": "string"
-                        },
-                        {
-                            "name": "family",
-                            "type": "string"
-                        }
-                    ],
-                    "name": "_card",
-                    "type": "tuple"
-                }
-            ],
+            "inputs": [{
+                "components": [{
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "name": "family",
+                        "type": "string"
+                    }
+                ],
+                "name": "_card",
+                "type": "tuple"
+            }],
             "name": "getHash",
-            "outputs": [
-                {
-                    "name": "",
-                    "type": "bytes32"
-                }
-            ],
+            "outputs": [{
+                "name": "",
+                "type": "bytes32"
+            }],
             "payable": false,
             "stateMutability": "view",
             "type": "function"
@@ -654,19 +637,15 @@ function load_contract(account) {
         },
         {
             "constant": false,
-            "inputs": [
-                {
-                    "name": "_player",
-                    "type": "address"
-                }
-            ],
+            "inputs": [{
+                "name": "_player",
+                "type": "address"
+            }],
             "name": "getPrettyPlayerCards",
-            "outputs": [
-                {
-                    "name": "",
-                    "type": "string[]"
-                }
-            ],
+            "outputs": [{
+                "name": "",
+                "type": "string[]"
+            }],
             "payable": false,
             "stateMutability": "nonpayable",
             "type": "function"
@@ -682,67 +661,54 @@ function load_contract(account) {
         },
         {
             "constant": true,
-            "inputs": [
-                {
-                    "name": "_name",
-                    "type": "string"
-                }
-            ],
+            "inputs": [{
+                "name": "_name",
+                "type": "string"
+            }],
             "name": "getHashForCard",
-            "outputs": [
-                {
-                    "name": "",
-                    "type": "bytes32"
-                }
-            ],
+            "outputs": [{
+                "name": "",
+                "type": "bytes32"
+            }],
             "payable": false,
             "stateMutability": "view",
             "type": "function"
         },
         {
             "constant": false,
-            "inputs": [
-                {
-                    "name": "_playerName",
-                    "type": "string"
-                }
-            ],
+            "inputs": [{
+                "name": "_playerName",
+                "type": "string"
+            }],
             "name": "registerIntoGame",
-            "outputs": [
-                {
-                    "name": "",
-                    "type": "string"
-                }
-            ],
+            "outputs": [{
+                "name": "",
+                "type": "string"
+            }],
             "payable": true,
             "stateMutability": "payable",
             "type": "function"
         },
         {
             "constant": true,
-            "inputs": [
-                {
-                    "name": "_player",
-                    "type": "address"
-                }
-            ],
+            "inputs": [{
+                "name": "_player",
+                "type": "address"
+            }],
             "name": "getPlayerCards",
-            "outputs": [
-                {
-                    "components": [
-                        {
-                            "name": "name",
-                            "type": "string"
-                        },
-                        {
-                            "name": "family",
-                            "type": "string"
-                        }
-                    ],
-                    "name": "",
-                    "type": "tuple[]"
-                }
-            ],
+            "outputs": [{
+                "components": [{
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "name": "family",
+                        "type": "string"
+                    }
+                ],
+                "name": "",
+                "type": "tuple[]"
+            }],
             "payable": false,
             "stateMutability": "view",
             "type": "function"
@@ -751,12 +717,10 @@ function load_contract(account) {
             "constant": true,
             "inputs": [],
             "name": "isGameRunning",
-            "outputs": [
-                {
-                    "name": "",
-                    "type": "bool"
-                }
-            ],
+            "outputs": [{
+                "name": "",
+                "type": "bool"
+            }],
             "payable": false,
             "stateMutability": "view",
             "type": "function"
@@ -765,24 +729,20 @@ function load_contract(account) {
             "constant": true,
             "inputs": [],
             "name": "getPlayersNames",
-            "outputs": [
-                {
-                    "name": "",
-                    "type": "string[]"
-                }
-            ],
+            "outputs": [{
+                "name": "",
+                "type": "string[]"
+            }],
             "payable": false,
             "stateMutability": "view",
             "type": "function"
         },
         {
             "constant": false,
-            "inputs": [
-                {
-                    "name": "_player",
-                    "type": "address"
-                }
-            ],
+            "inputs": [{
+                "name": "_player",
+                "type": "address"
+            }],
             "name": "goToNextPlayer",
             "outputs": [],
             "payable": false,
@@ -800,8 +760,7 @@ function load_contract(account) {
         },
         {
             "constant": false,
-            "inputs": [
-                {
+            "inputs": [{
                     "name": "_src",
                     "type": "address"
                 },
@@ -818,12 +777,10 @@ function load_contract(account) {
         },
         {
             "constant": false,
-            "inputs": [
-                {
-                    "name": "_playerToSwapWith",
-                    "type": "address"
-                }
-            ],
+            "inputs": [{
+                "name": "_playerToSwapWith",
+                "type": "address"
+            }],
             "name": "swapCards",
             "outputs": [],
             "payable": false,
@@ -843,8 +800,7 @@ function load_contract(account) {
         },
         {
             "anonymous": false,
-            "inputs": [
-                {
+            "inputs": [{
                     "indexed": false,
                     "name": "_contract",
                     "type": "address"
@@ -865,8 +821,7 @@ function load_contract(account) {
         },
         {
             "anonymous": false,
-            "inputs": [
-                {
+            "inputs": [{
                     "indexed": false,
                     "name": "_contract",
                     "type": "address"
@@ -887,8 +842,7 @@ function load_contract(account) {
         },
         {
             "anonymous": false,
-            "inputs": [
-                {
+            "inputs": [{
                     "indexed": false,
                     "name": "_src",
                     "type": "address"
@@ -909,8 +863,7 @@ function load_contract(account) {
         },
         {
             "anonymous": false,
-            "inputs": [
-                {
+            "inputs": [{
                     "indexed": false,
                     "name": "_player",
                     "type": "address"
@@ -926,20 +879,17 @@ function load_contract(account) {
         },
         {
             "anonymous": false,
-            "inputs": [
-                {
-                    "indexed": false,
-                    "name": "_player",
-                    "type": "address"
-                }
-            ],
+            "inputs": [{
+                "indexed": false,
+                "name": "_player",
+                "type": "address"
+            }],
             "name": "JokerUsed",
             "type": "event"
         },
         {
             "anonymous": false,
-            "inputs": [
-                {
+            "inputs": [{
                     "indexed": false,
                     "name": "_player",
                     "type": "address"
@@ -955,8 +905,7 @@ function load_contract(account) {
         },
         {
             "anonymous": false,
-            "inputs": [
-                {
+            "inputs": [{
                     "indexed": false,
                     "name": "_player",
                     "type": "address"
