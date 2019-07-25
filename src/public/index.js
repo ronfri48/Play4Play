@@ -5,8 +5,14 @@ window.addEventListener('load', function () {
     if (document.cookie.startsWith('publicKey=')) {
         modalElement.className = 'modal hidden';
         let helloHeaderElement = document.getElementsByClassName('public-id-headline')[0];
-        let pk = this.document.cookie.substr('publicKey='.length, 40);
+        let pk = this.document.cookie.substr('publicKey='.length);
         helloHeaderElement.innerHTML = 'Your public ID is: ' + pk;
+        fetchFromServer('setPK', function (isSucceeded) {
+            if (!isSucceeded) {
+                document.cookie = '';
+                location.reload();
+            }
+        }, 'pk=' + pk)
     }
 })
 
