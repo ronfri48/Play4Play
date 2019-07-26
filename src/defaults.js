@@ -24,6 +24,7 @@ var defaults = {
     leaveGame: true,
     payToUser: true,
     moveCard: false,
-    isGameOn: true
+    isGameOn: true,
+    playerNames: ['Mica', 'Rachel', 'Avi']
 }
 module.exports = defaults

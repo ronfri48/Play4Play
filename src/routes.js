@@ -31,8 +31,18 @@ router.get('/getGameMessages', (req, res) => {
     res.json(messages)
 })
 router.get('/getPlayers', (req, res) => {
-    let messages = ['Ron', 'Shmulik', 'Ziva']
-    res.json(messages)
+    gameContract.methods.getPlayersNames().call({
+        gas: gas
+    }).then(function (names) {
+        if (names == null) {
+            return defaultResults.playerNames;
+        }
+        res.json(names)
+    }).catch(function (error) {
+        res.json({
+            'Error': error
+        })
+    })
 })
 router.get('/isGameOn', (req, res) => {
     gameContract.methods.isGameRunning().call({
