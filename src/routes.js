@@ -1,5 +1,6 @@
 const defaultResults = require('./defaults.js');
 const web3js = require('web3');
+var web3;
 var config = require('./config.js');
 var express = require('express');
 var MerkleTree = require('merkletreejs');
@@ -51,14 +52,13 @@ router.get('/requestCards', (req, res) => {
     });
 })
 router.get('/addToGame', (req, res) => {
-    let playerPk = req.query['pk'];
-    let gameIndex = req.query['gameIndex'];
+    let gameAddress = req.query['gameAddress'];
 
-    if (pk != myAccount) {
-        res.status(400).json('user cant run functions behalf of other user')
-    }
+    gameContract = web3.eth.Contract(config.gameABI, gameAddress, {
+        defaultAccount: myAccount
+    });
 
-    gameContract.methods.registerIntoGame(playerPk, 6).call({
+    gameContract.methods.registerIntoGame(myAccount).call({
         gas: gas
     }).then(function (result) {
         console.log(result);
@@ -207,18 +207,12 @@ router.get('/payToUser', (req, res) => {
 function loadContract(account) {
     //var account = '0x3ee54cf657411f96a956344f08683f2a550d5869'
     myAccount = account;
-    var web3;
-
     if (typeof web3 !== 'undefined') {
 
         web3 = new web3js(web3.currentProvider);
     } else {
         web3 = new web3js("https://ropsten.infura.io/v3/22156e2cbcd9492aa066ac25ccd14174");
     }
-
-    gameContract = web3.eth.Contract(config.gameABI, config.gameContractAddress, {
-        defaultAccount: account
-    });
 
     coinContract = web3.eth.Contract(config.coinABI, config.coinContractAddress, {
         defaultAccount: account

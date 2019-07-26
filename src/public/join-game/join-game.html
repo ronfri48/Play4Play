@@ -18,17 +18,11 @@
         <a class="navbar-brand navbar-padding" href="/game/game.html">Your Current Game</a>
     </nav>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Name</th>
-                <th scope="col">Players Ready</th>
-            </tr>
+    <div class="form-group">
+        <label for="name">Game Address</label>
+        <input class="form-control game-name-input" aria-describedby="name" placeholder="Game Address">
+        <small class="form-text text-muted">Here you should put the contract's address</small>
+    </div>
 
-        </thead>
-        <tbody class='game-list'>
-
-        </tbody>
-    </table>
+    <button onclick="joinGameClicked()" class="btn btn-primary btn-lg new-game-button">Join The Game</button>
 </body>
