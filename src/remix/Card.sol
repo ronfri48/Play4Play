@@ -1,3 +1,6 @@
+// We want to declare Card as contract, but it casuses contract fee to oversize the max gas limit.
+
+
 pragma solidity ^0.4.24;
 
 import "./strings.sol";

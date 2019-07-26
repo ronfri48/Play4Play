@@ -3,7 +3,6 @@ pragma experimental ABIEncoderV2;
 
 // import "./Card.sol";
 import "./strings.sol";
-import "./QuartetCoin.sol";
 
 contract Quartet {
     using strings for *;
@@ -35,9 +34,9 @@ contract Quartet {
     uint256 private _numberOfPlayers;
     uint256 private _winBalance;
     uint256 private _ethLimit = 1000000000000 wei;
-    uint256 private _jokerPrice = 2;
-    uint256 private _watcherPrice = 3;
-    uint256 private _swapperPrice = 4;
+    uint256 private _jokerPrice = 2 wei;
+    uint256 private _watcherPrice = 3 wei;
+    uint256 private _swapperPrice = 4 wei;
     Card[] private _moreCards;
     Card[] private _allCards;
     bool private _isGameRunning = false;
@@ -94,7 +93,7 @@ contract Quartet {
         _currentPlayer = address(0x0);
         _winBalance = 0;
         _numberOfPlayers = 0;
-        
+
         _allCards.push(Card("Diskont", "Banks"));
         _allCards.push(Card("Hapoalim", "Banks"));
         _allCards.push(Card("OtzarHahayal", "Banks"));
@@ -111,6 +110,8 @@ contract Quartet {
         _allCards.push(Card("Haifa", "Cities"));
         _allCards.push(Card("Jerusalem", "Cities"));
         _allCards.push(Card("TelAviv", "Cities"));
+        
+        //Those cards are commented out because declaring them causes the transaction fee to oversize the max gas limit.
         /*
         _allCards.push(Card("Bamba", "Food"));
         _allCards.push(Card("Falafel", "Food"));
@@ -147,8 +148,7 @@ contract Quartet {
 
     ///*********fallback - Unused***********///
     function () external isValidAddr payable {
-        //Players must use PayContract function to pay
-        revert("Please use PayContract Function to pay.");
+        revert("Don't do bugs.");
     }
 
     ///************regsiter to game*************///
@@ -158,12 +158,6 @@ contract Quartet {
 
         // For every player - add 1 to the winning prize
         _winBalance += 1;
-        
-        uint256 numberOfFours; // current number of points the player has reahced during the game
-        uint256 numberOfJokers; // number of Joker crads the player has
-        uint256 numberOfSwappers; // number of "Swap with other player" crads the player has
-        uint256 numberOfWatchers; // number of "Watch other's cards" crads the player has
-        Card[] cards; // player cards
 
         // Create player
         Player _player;
@@ -173,7 +167,7 @@ contract Quartet {
         _player.numberOfJokers = 0;
         _player.numberOfSwappers = 0;
         _player.numberOfWatchers = 0;
-        
+ 
         // Add player
         _players[msg.sender] = _player;
         _playersIndex[_numberOfPlayers] = msg.sender;
@@ -183,11 +177,11 @@ contract Quartet {
 
         evenGame();
 
-        return "Registered Successfuly.";
-        
         if(_numberOfPlayers == 4) {
             _isGameRunning = true;
         }
+
+        return "Registered Successfuly.";
     }
 
     function exitGame() public isValidAddr {
@@ -235,7 +229,7 @@ contract Quartet {
     function doesPlayerHasCardFromFamily(address _player, string memory _cardName) internal view isPlayer(_player) returns (bool) {
         string memory _cardFamily;
         Card[] _playerCards;
-        
+
         for(uint tempIndex = 0; tempIndex < _players[_player].cards.length; tempIndex++) {
             _playerCards.push(_players[_player].cards[tempIndex]);
         }
@@ -258,13 +252,13 @@ contract Quartet {
     function getCardFromPlayer(address _player, string memory _cardName) internal isPlayer(_player) returns (Card) {
         require(doesPlayerHasCardFromFamily(msg.sender, _cardName), "You can not ask about a family you don't have");
         require(doesPlayerHaveCard(_player, _cardName), "Src Player does not have the card");
-        
+
         Card[] _playerCards;
-        
+
         for(uint tempIndex = 0; tempIndex < _players[_player].cards.length; tempIndex++) {
             _playerCards.push(_players[_player].cards[tempIndex]);
         }
-        
+
         //Card _cardToMove;
         for(uint i = 0; i<_playerCards.length; i++){
             if (StringUtils.equal(_cardName, _playerCards[i].name)) {
@@ -273,11 +267,11 @@ contract Quartet {
                 // Update source cards
                 _playerCards[i] = _playerCards[_playerCards.length-1];
                 delete _playerCards[_playerCards.length-1];
-                
+
                 for(uint j = 0; j < _playerCards.length; j++) {
                     _players[_player].cards.push(_playerCards[j]);
                 }
-                
+
                 return _cardToMove;
             }
         }
@@ -298,7 +292,7 @@ contract Quartet {
             }
         }
     }
-    
+
     function _findFours(address _player, Card[] _playerCards, uint _numberOfJokersToUse) internal returns(string[] memory) {
         string[] storage _foundFours;
 
@@ -377,9 +371,9 @@ contract Quartet {
                 maxFours = _players[_playersIndex[i]].numberOfFours;
             }
         }
-        
+
         _isGameRunning = false;
-        
+
         emit PlayerWithdrawal(address(this), _winningPlayer, _winBalance);
         return (_winningPlayer, _winBalance);
     }
@@ -388,7 +382,7 @@ contract Quartet {
         _currentPlayer = address(0x0);
         _numberOfPlayers = 0;
         _winBalance = 0;
-        
+
         for(uint i = 0; i < _allCards.length; i++) {
             _moreCards.push(_allCards[i]);
         }
@@ -396,21 +390,21 @@ contract Quartet {
 
     function getPlayerCards(address _player) public view isCurrentPlayer(_player) returns (Card[]) {
         Card[] _playerCards;
-        
+
         for(uint j = 0; j < _players[_player].cards.length; j++) {
             _playerCards.push(_players[_player].cards[j]);
         }
-        
+
         return _playerCards;
     }
 
     function getPlayerCardsHashes(address _player) public returns (bytes32[] memory) {
         Card[] _playerCards;
-        
+
         for(uint tempIndex = 0; tempIndex < _players[_player].cards.length; tempIndex++) {
             _playerCards.push(_players[_player].cards[tempIndex]);
         }
-        
+
         bytes32[] storage _hashes;
 
         for(uint index = 0; index < _playerCards.length; index++) {
@@ -422,19 +416,19 @@ contract Quartet {
 
     function swapCards(address _playerToSwapWith) public {
         require(_players[msg.sender].numberOfSwappers > 0, "Can not use swapper if have no swappers.");
-        
+
         Card[] _senderCards;
-        
+
         for(uint i = 0; i < _players[msg.sender].cards.length; i++) {
             _senderCards.push(_players[msg.sender].cards[i]);
         }
-        
+
         Card[] _swappedCards;
-        
+
         for(uint j = 0; j < _players[_playerToSwapWith].cards.length; j++) {
             _swappedCards.push(_players[_playerToSwapWith].cards[j]);
         }
-        
+
         emit SwapperUsed(msg.sender, _playerToSwapWith);
     }
 
@@ -473,17 +467,17 @@ contract Quartet {
     function goToNextPlayer(address _player) public {
         _currentPlayer = _player;
     }
-    
+
     function getPlayersNames() public view returns(string[]) {
         string[] _playersNames;
-        
+
         for(uint i = 0; i<_numberOfPlayers; i++){
             _playersNames.push(_players[_playersIndex[i]].name);
         }
-        
+
         return _playersNames;
     }
-    
+
     function isGameRunning() public view returns (bool) {
         return _isGameRunning;
     }
