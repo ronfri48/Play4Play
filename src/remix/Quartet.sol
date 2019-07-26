@@ -420,24 +420,6 @@ contract Quartet {
         return _hashes;
     }
 
-    function getPrettyPlayerCards(address _player) public isCurrentPlayer(_player) returns (string[] memory) {
-        Card[] _playerCards;
-        
-        for(uint tempIndex = 0; tempIndex < _players[_player].cards.length; tempIndex++) {
-            _playerCards.push(_players[_player].cards[tempIndex]);
-        }
-        
-        string[] _cards;
-
-        for(uint index = 0; index < _playerCards.length; index++) {
-            Card _card = _playerCards[index];
-            string memory _cardStr = strings.concat(strings.toSlice(strings.concat(strings.toSlice(_card.name), strings.toSlice(", "))), strings.toSlice(_card.family));
-            _cards.push(_cardStr);
-        }
-
-        return _cards;
-    }
-
     function swapCards(address _playerToSwapWith) public {
         require(_players[msg.sender].numberOfSwappers > 0, "Can not use swapper if have no swappers.");
         
@@ -493,7 +475,7 @@ contract Quartet {
     }
     
     function getPlayersNames() public view returns(string[]) {
-        string[] storage _playersNames;
+        string[] _playersNames;
         
         for(uint i = 0; i<_numberOfPlayers; i++){
             _playersNames.push(_players[_playersIndex[i]].name);
