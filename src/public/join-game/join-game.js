@@ -20,7 +20,7 @@ function fetchFromServer(functionName, callback, parameterString) {
 }
 
 function joinGameClicked(gameIndex) {
-    let pk = this.document.cookie.substr('publicKey='.length, 40);
+    let pk = this.document.cookie.substr('publicKey='.length);
     fetchFromServer(addToGameFunction, function (isSucceded) {
         if (isSucceded) {
             location.href = '/game/game.html';
