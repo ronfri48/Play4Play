@@ -23,6 +23,7 @@ var defaults = {
     useSneakyPeaky: true,
     leaveGame: true,
     payToUser: true,
-    moveCard: false
+    moveCard: false,
+    isGameOn: true
 }
 module.exports = defaults

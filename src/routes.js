@@ -35,8 +35,18 @@ router.get('/getPlayers', (req, res) => {
     res.json(messages)
 })
 router.get('/isGameOn', (req, res) => {
-    let messages = true;
-    res.json(messages)
+    gameContract.methods.isGameRunning().call({
+        gas: gas
+    }).then(function (isGameOn) {
+        if (isGameOn == null) {
+            return defaultResults.isGameOn;
+        }
+        res.json(isGameOn)
+    }).catch(function (error) {
+        res.json({
+            'Error': error
+        })
+    })
 })
 router.get('/requestCards', (req, res) => {
     let player = req.query['player'];
