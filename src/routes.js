@@ -21,7 +21,9 @@ router.get('/getMyCards', (req, res) => {
         return res.send(result);
     }).catch(function (error) {
         console.log(error);
-        return res.send({'Error': error})
+        return res.send({
+            'Error': error
+        })
     });
 })
 router.get('/getGameMessages', (req, res) => {
@@ -44,11 +46,16 @@ router.get('/requestCards', (req, res) => {
         gas: gas
     }).then(function (cardRequested) {
         console.log(cardRequested);
-        let result = checkTurn(cardRequested, player);
-        return res.send(result);
+        let isLeagal = checkTurn(cardRequested, player);
+        if (isLeagal) {
+            finishTurn();
+        }
+        return res.send(isLeagal);
     }).catch(function (error) {
         console.log(error);
-        return res.send({'Error': error})
+        return res.send({
+            'Error': error
+        })
     });
 })
 router.get('/addToGame', (req, res) => {
@@ -68,7 +75,9 @@ router.get('/addToGame', (req, res) => {
         return res.send(result);
     }).catch(function (error) {
         console.log(error);
-        return res.status(200).send({'Error': error})
+        return res.status(200).send({
+            'Error': error
+        })
     });
 
 })
@@ -101,7 +110,9 @@ router.get('/useJokerCard', (req, res) => {
         return res.send(result);
     }).catch(function (error) {
         console.log(error);
-        return res.send({'Error': error})
+        return res.send({
+            'Error': error
+        })
     });
 })
 router.get('/useSwapCards', (req, res) => {
@@ -124,11 +135,15 @@ router.get('/useSwapCards', (req, res) => {
             return res.send(result);
         }).catch(function (error) {
             console.log(error);
-            return res.send({'Error': error})
+            return res.send({
+                'Error': error
+            })
         });
     }).catch(function (error) {
         console.log(error);
-        return res.send({'Error': error})
+        return res.send({
+            'Error': error
+        })
     });
 })
 router.get('/useSneakyPeaky', (req, res) => {
@@ -153,11 +168,15 @@ router.get('/useSneakyPeaky', (req, res) => {
             return res.send(result);
         }).catch(function (error) {
             console.log(error);
-            return res.send({'Error': error})
+            return res.send({
+                'Error': error
+            })
         });
     }).catch(function (error) {
         console.log(error);
-        return res.send({'Error': error})
+        return res.send({
+            'Error': error
+        })
     });
 })
 router.get('/leaveGame', (req, res) => {
@@ -177,7 +196,9 @@ router.get('/leaveGame', (req, res) => {
         return res.send(result);
     }).catch(function (error) {
         console.log(error);
-        return res.send({'Error': error})
+        return res.send({
+            'Error': error
+        })
     });
 })
 router.get('/setPK', (req, res) => {
@@ -199,7 +220,9 @@ router.get('/payToUser', (req, res) => {
         return res.send(result);
     }).catch(function (error) {
         console.log(error);
-        return res.send({'Error': error})
+        return res.send({
+            'Error': error
+        })
     });
 })
 
@@ -247,9 +270,49 @@ function checkTurn(cardRequested, player) {
             return !found;
         }).catch(function (error) {
             console.log(error);
-            return res.send({'Error': error})
+            return res.send({
+                'Error': error
+            })
         });
     }
+}
+
+function finishTurn() {
+    //teardownGame
+    //if end: pay & closeGame
+    //if not end: moveToNextPlayer
+
+    gameContract.methods.teardownGame().call({
+        gas: gas
+    }).then(function (whoToPay, amountToPay) {
+
+
+        coinContract.methods.transfer(whoToPay, amountToPay).call({
+            gas: gas
+        }).catch(function (error) {
+            return res.send({
+                'Error': error
+            })
+        });
+
+
+        gameContract.methods.closeGame().call({
+            gas: gas
+        }).then(function () {
+            res.json(true)
+        })
+
+    }).catch(function () {
+        gameContract.methods.moveToNextPlayer().call({
+            gas: gas
+        }).then(function () {
+            res.json(true)
+        }).catch(function (error) {
+            res.json({
+                'Error': error
+            })
+        })
+    });
 }
 
 
