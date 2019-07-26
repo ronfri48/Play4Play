@@ -58,7 +58,7 @@ router.get('/addToGame', (req, res) => {
         res.status(400).json('user cant run functions behalf of other user')
     }
 
-    gameContract.methods.registerIntoGame(playerPk, 6).call({ //TODO: chage this 6 constant
+    gameContract.methods.registerIntoGame(playerPk, 6).call({
         gas: gas
     }).then(function (result) {
         console.log(result);
