@@ -20,10 +20,10 @@ function fetchFromServer(functionName, callback, parameterString) {
 function joinGameClicked() {
     let gameAddress = document.getElementsByClassName('game-name-input')[0].value;
     fetchFromServer(addToGameFunction, function (isSucceded) {
+        console.log(isSucceded)
         if (isSucceded) {
             location.href = '/game/game.html';
         } else {
-            alert('error. could not add you to the game')
             location.reload();
         }
     }, 'gameAddress=' + gameAddress)

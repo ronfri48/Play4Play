@@ -21,7 +21,7 @@ router.get('/getMyCards', (req, res) => {
         return res.send(result);
     }).catch(function (error) {
         console.log(error);
-        return res.send('Error ' + error)
+        return res.send({'Error': error})
     });
 })
 router.get('/getGameMessages', (req, res) => {
@@ -48,7 +48,7 @@ router.get('/requestCards', (req, res) => {
         return res.send(result);
     }).catch(function (error) {
         console.log(error);
-        return res.send('Error ' + error)
+        return res.send({'Error': error})
     });
 })
 router.get('/addToGame', (req, res) => {
@@ -68,7 +68,7 @@ router.get('/addToGame', (req, res) => {
         return res.send(result);
     }).catch(function (error) {
         console.log(error);
-        return res.send('Error ' + error)
+        return res.status(200).send({'Error': error})
     });
 
 })
@@ -101,7 +101,7 @@ router.get('/useJokerCard', (req, res) => {
         return res.send(result);
     }).catch(function (error) {
         console.log(error);
-        return res.send('Error ' + error)
+        return res.send({'Error': error})
     });
 })
 router.get('/useSwapCards', (req, res) => {
@@ -124,11 +124,11 @@ router.get('/useSwapCards', (req, res) => {
             return res.send(result);
         }).catch(function (error) {
             console.log(error);
-            return res.send('Error ' + error)
+            return res.send({'Error': error})
         });
     }).catch(function (error) {
         console.log(error);
-        return res.send('Error ' + error)
+        return res.send({'Error': error})
     });
 })
 router.get('/useSneakyPeaky', (req, res) => {
@@ -153,11 +153,11 @@ router.get('/useSneakyPeaky', (req, res) => {
             return res.send(result);
         }).catch(function (error) {
             console.log(error);
-            return res.send('Error ' + error)
+            return res.send({'Error': error})
         });
     }).catch(function (error) {
         console.log(error);
-        return res.send('Error ' + error)
+        return res.send({'Error': error})
     });
 })
 router.get('/leaveGame', (req, res) => {
@@ -177,7 +177,7 @@ router.get('/leaveGame', (req, res) => {
         return res.send(result);
     }).catch(function (error) {
         console.log(error);
-        return res.send('Error ' + error)
+        return res.send({'Error': error})
     });
 })
 router.get('/setPK', (req, res) => {
@@ -199,7 +199,7 @@ router.get('/payToUser', (req, res) => {
         return res.send(result);
     }).catch(function (error) {
         console.log(error);
-        return res.send('Error ' + error)
+        return res.send({'Error': error})
     });
 })
 
@@ -247,7 +247,7 @@ function checkTurn(cardRequested, player) {
             return !found;
         }).catch(function (error) {
             console.log(error);
-            return res.send('Error ' + error)
+            return res.send({'Error': error})
         });
     }
 }
