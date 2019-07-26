@@ -35,7 +35,7 @@ router.get('/getPlayers', (req, res) => {
         gas: gas
     }).then(function (names) {
         if (names == null) {
-            return defaultResults.playerNames;
+            names = defaultResults.playerNames;
         }
         res.json(names)
     }).catch(function (error) {
@@ -49,8 +49,10 @@ router.get('/isGameOn', (req, res) => {
         gas: gas
     }).then(function (isGameOn) {
         if (isGameOn == null) {
-            return defaultResults.isGameOn;
+
+            isGameOn = defaultResults.isGameOn;
         }
+        //isGameOn = true; //TODO: delete this
         res.json(isGameOn)
     }).catch(function (error) {
         res.json({
@@ -102,14 +104,9 @@ router.get('/addToGame', (req, res) => {
 
 })
 router.get('/useJokerCard', (req, res) => {
-    let pk = req.query['pk'];
-    if (pk != myAccount) {
-        res.status(400).json('user cant run functions behalf of other user')
-    }
     gameContract.methods.buyJoker().call({
         gas: gas
     }).then(function (result) {
-        console.log(result);
         if (result === null) {
             result = defaultResults.useJokerCard
         }
@@ -122,16 +119,13 @@ router.get('/useJokerCard', (req, res) => {
     });
 })
 router.get('/useSwapCards', (req, res) => {
-    let pk = req.query['pk'];
     let victimPk = req.query['victimPk'];
-    if (pk != myAccount) {
-        res.status(400).json('user cant run functions behalf of other user')
-    }
+
     gameContract.methods.buySwapper().call({
         gas: gas
     }).then(function (result) {
         console.log(result);
-        gameContract.methods.SwapperUsed(pk, victimPk).call({
+        gameContract.methods.SwapperUsed(myAccount, victimPk).call({
             gas: gas
         }).then(function (result) {
             console.log(result);
@@ -153,18 +147,13 @@ router.get('/useSwapCards', (req, res) => {
     });
 })
 router.get('/useSneakyPeaky', (req, res) => {
-    let pk = req.query['pk'];
     let victimPk = req.query['victimPk'];
-
-    if (pk != myAccount) {
-        res.status(400).json('user cant run functions behalf of other user')
-    }
 
     gameContract.methods.buyWatcher().call({
         gas: gas
     }).then(function (result) {
         console.log(result);
-        gameContract.methods.WatcherUsed(pk, victimPk).call({
+        gameContract.methods.WatcherUsed(myAccount, victimPk).call({
             gas: gas
         }).then(function (result) {
             console.log(result);
@@ -222,6 +211,9 @@ function loadContract(account) {
     }
 
     coinContract = web3.eth.Contract(config.coinABI, config.coinContractAddress, {
+        defaultAccount: account
+    });
+    gameContract = web3.eth.Contract(config.gameABI, defaultResults.gameAddress, {
         defaultAccount: account
     });
 }
