@@ -1,42 +1,48 @@
+// We want to declare Card as contract, but it casuses contract fee to oversize the max gas limit.
+
+
 pragma solidity ^0.4.24;
 
 import "./strings.sol";
 
 contract Card {
     // Define all the optional card families
-    string[] private _allCardFamilies = [
-        "Banks",
-        "BasketBallTeams",
-        "Celebs",
-        "Cities",
-        "Food",
-        "FootBallTeams",
-        "Inventions",
-        "Places",
-        "Univrsities",
-        "Words"
-        ];
+    string[] private _allCardFamilies;
     
     string private _name; // card name
     string private _family; // card family
 
-    modifier isValidFamily(string memory _familyToCheck) {
-        bool _wasFound = false;
+    function isValidFamily(string memory _familyToCheck) public view returns(bool) {
         for (uint index = 0; index < _allCardFamilies.length; index++) {
             string memory _currentFamily = _allCardFamilies[index];
             if (StringUtils.equal(_currentFamily, _familyToCheck)) {
-                _wasFound = true;
-                break;
+                return true;
             }
         }
 
-        require(_wasFound, "Invalid Family");
-        _;
+        return false;
     }
 
-    constructor(string memory _cardName, string memory _cardFamily) isValidFamily(_cardFamily) public {
+    constructor(string memory _cardName, string memory _cardFamily) public payable {
         _name = _cardName;
         _family = _cardFamily;
+        
+        _allCardFamilies.push("Banks");
+        _allCardFamilies.push("BasketBallTeams");
+        _allCardFamilies.push("Celebs");
+        _allCardFamilies.push("Cities");
+        _allCardFamilies.push("Food");
+        _allCardFamilies.push("FootBallTeams");
+        _allCardFamilies.push("Inventions");
+        _allCardFamilies.push("Places");
+        _allCardFamilies.push("Univrsities");
+        _allCardFamilies.push("Words");
+        
+        require(isValidFamily(_family), "Family should be valid");
+    }
+    
+    function () external payable {
+        revert("Please use PayContract Function to pay.");
     }
 
     function name() public view returns(string memory) {

@@ -1,12 +1,21 @@
 pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
-import "./Card.sol";
+// import "./Card.sol";
 import "./strings.sol";
-import "./QuartetCoin.sol";
 
 contract Quartet {
     using strings for *;
+    
+    struct Card
+    {
+        string name;
+        string family;
+    }
+    
+    function getHash(Card _card) public view returns(bytes32) {
+        return keccak256(abi.encodePacked(_card.name, msg.sender));
+    }
 
     // Define player structure
     struct Player {
@@ -24,13 +33,13 @@ contract Quartet {
     address private _currentPlayer;
     uint256 private _numberOfPlayers;
     uint256 private _winBalance;
-    uint256 private _ethLimit = 1000000 wei;
-    uint256 private _jokerPrice = 2;
-    uint256 private _watcherPrice = 3;
-    uint256 private _swapperPrice = 4;
+    uint256 private _ethLimit = 1000000000000 wei;
+    uint256 private _jokerPrice = 2 wei;
+    uint256 private _watcherPrice = 3 wei;
+    uint256 private _swapperPrice = 4 wei;
     Card[] private _moreCards;
     Card[] private _allCards;
-    QuartetCoin private _quartetCoin;
+    bool private _isGameRunning = false;
 
 
     ///-----------event logging-------------///
@@ -80,63 +89,67 @@ contract Quartet {
     }
 
     ///******constructor********///
-    constructor(address _coinAddress) public {
+    constructor() payable public {
         _currentPlayer = address(0x0);
         _winBalance = 0;
         _numberOfPlayers = 0;
+
+        _allCards.push(Card("Diskont", "Banks"));
+        _allCards.push(Card("Hapoalim", "Banks"));
+        _allCards.push(Card("OtzarHahayal", "Banks"));
+        _allCards.push(Card("Pepper", "Banks"));
+        _allCards.push(Card("HapoelBeerSheva", "BasketBallTeams"));
+        _allCards.push(Card("HapoelJerusalem", "BasketBallTeams"));
+        _allCards.push(Card("MacabiTelAviv", "BasketBallTeams"));
+        _allCards.push(Card("MacabiRishonLetzion", "BasketBallTeams"));
+        _allCards.push(Card("BarRefaeli", "Celebs"));
+        _allCards.push(Card("GalGadot", "Celebs"));
+        _allCards.push(Card("Netta", "Celebs"));
+        _allCards.push(Card("OmriCasspi", "Celebs"));
+        _allCards.push(Card("Eilat", "Cities"));
+        _allCards.push(Card("Haifa", "Cities"));
+        _allCards.push(Card("Jerusalem", "Cities"));
+        _allCards.push(Card("TelAviv", "Cities"));
         
-        _quartetCoin = QuartetCoin(_coinAddress);
+        //Those cards are commented out because declaring them causes the transaction fee to oversize the max gas limit.
+        /*
+        _allCards.push(Card("Bamba", "Food"));
+        _allCards.push(Card("Falafel", "Food"));
+        _allCards.push(Card("Humus", "Food"));
+        _allCards.push(Card("Shakshuka", "Food"));
+        _allCards.push(Card("BeitarJerusalem", "FootBallTeams"));
+        _allCards.push(Card("HapoelBeerSheva", "FootBallTeams"));
+        _allCards.push(Card("MacabiHaifa", "FootBallTeams"));
+        _allCards.push(Card("MacabiTelAviv", "FootBallTeams"));
+        _allCards.push(Card("IronDome", "Inventions"));
+        _allCards.push(Card("Mobileye", "Inventions"));
+        _allCards.push(Card("Usb", "Inventions"));
+        _allCards.push(Card("Waze", "Inventions"));
+        _allCards.push(Card("Masada", "Places"));
+        _allCards.push(Card("RamonCenter", "Places"));
+        _allCards.push(Card("WesternWall", "Places"));
+        _allCards.push(Card("HebrewUniversity", "Places"));
+        _allCards.push(Card("IDC", "Univrsities"));
+        _allCards.push(Card("Technion", "Univrsities"));
+        _allCards.push(Card("TelAvivUniversity", "Univrsities"));
+        _allCards.push(Card("Toda", "Words"));
+        _allCards.push(Card("Sababa", "Words"));
+        _allCards.push(Card("Kapara", "Words"));
+        _allCards.push(Card("Basa", "Words"));
+        */
+        
+        for(uint i = 0; i < _allCards.length; i++) {
+            _moreCards.push(_allCards[i]);
+        }
 
-        _allCards.push(new Card("Diskont", "Banks"));
-        _allCards.push(new Card("Hapoalim", "Banks"));
-        _allCards.push(new Card("OtzarHahayal", "Banks"));
-        _allCards.push(new Card("Pepper", "Banks"));
-        _allCards.push(new Card("HapoelBeerSheva", "BasketBallTeams"));
-        _allCards.push(new Card("HapoelJerusalem", "BasketBallTeams"));
-        _allCards.push(new Card("MacabiTelAviv", "BasketBallTeams"));
-        _allCards.push(new Card("MacabiRishonLetzion", "BasketBallTeams"));
-        _allCards.push(new Card("BarRefaeli", "Celebs"));
-        _allCards.push(new Card("GalGadot", "Celebs"));
-        _allCards.push(new Card("Netta", "Celebs"));
-        _allCards.push(new Card("OmriCasspi", "Celebs"));
-        _allCards.push(new Card("Eilat", "Cities"));
-        _allCards.push(new Card("Haifa", "Cities"));
-        _allCards.push(new Card("Jerusalem", "Cities"));
-        _allCards.push(new Card("TelAviv", "Cities"));
-        _allCards.push(new Card("Bamba", "Food"));
-        _allCards.push(new Card("Falafel", "Food"));
-        _allCards.push(new Card("Humus", "Food"));
-        _allCards.push(new Card("Shakshuka", "Food"));
-        _allCards.push(new Card("BeitarJerusalem", "FootBallTeams"));
-        _allCards.push(new Card("HapoelBeerSheva", "FootBallTeams"));
-        _allCards.push(new Card("MacabiHaifa", "FootBallTeams"));
-        _allCards.push(new Card("MacabiTelAviv", "FootBallTeams"));
-        _allCards.push(new Card("IronDome", "Inventions"));
-        _allCards.push(new Card("Mobileye", "Inventions"));
-        _allCards.push(new Card("Usb", "Inventions"));
-        _allCards.push(new Card("Waze", "Inventions"));
-        _allCards.push(new Card("Masada", "Places"));
-        _allCards.push(new Card("RamonCenter", "Places"));
-        _allCards.push(new Card("WesternWall", "Places"));
-        _allCards.push(new Card("HebrewUniversity", "Places"));
-        _allCards.push(new Card("IDC", "Univrsities"));
-        _allCards.push(new Card("Technion", "Univrsities"));
-        _allCards.push(new Card("TelAvivUniversity", "Univrsities"));
-        _allCards.push(new Card("Toda", "Words"));
-        _allCards.push(new Card("Sababa", "Words"));
-        _allCards.push(new Card("Kapara", "Words"));
-        _allCards.push(new Card("Basa", "Words"));
-
-        _moreCards = _allCards;
+        _isGameRunning = false;
     }
 
 
     ///*********fallback - Unused***********///
     function () external isValidAddr payable {
-        //Players must use PayContract function to pay
-        revert("Please use PayContract Function to pay.");
+        revert("Don't do bugs.");
     }
-
 
     ///************regsiter to game*************///
     function registerIntoGame(string memory _playerName) public isValidAddr isThereFreePlace payable returns (string memory) {
@@ -146,15 +159,27 @@ contract Quartet {
         // For every player - add 1 to the winning prize
         _winBalance += 1;
 
+        // Create player
+        Player storage _player;
+        _player.name = _playerName;
+        _player.playerAddress = msg.sender;
+        _player.numberOfFours = 0;
+        _player.numberOfJokers = 0;
+        _player.numberOfSwappers = 0;
+        _player.numberOfWatchers = 0;
+ 
         // Add player
-        Card[] memory _cards;
-        _players[msg.sender] = Player(_playerName, msg.sender, 0, 0, 0, 0, _cards);
+        _players[msg.sender] = _player;
         _playersIndex[_numberOfPlayers] = msg.sender;
         _numberOfPlayers++;
 
         emit PlayerDeposit(address(this), msg.sender, msg.value);
 
         evenGame();
+
+        if(_numberOfPlayers == 4) {
+            _isGameRunning = true;
+        }
 
         return "Registered Successfuly.";
     }
@@ -181,7 +206,7 @@ contract Quartet {
 
     function popCardFromCenter() internal returns (Card) {
         uint _randIndex = getRandomNumber(_moreCards.length);
-        Card _card = _moreCards[_randIndex];
+        Card storage _card = _moreCards[_randIndex];
         _popCard(_randIndex);
 
         return _card;
@@ -192,9 +217,8 @@ contract Quartet {
     }
 
     function doesPlayerHaveCard(address _player, string memory _cardName) internal view isPlayer(_player) returns (bool) {
-        Card[] memory _playerCards = _players[_player].cards;
-        for(uint i = 0; i<_playerCards.length; i++){
-            if (StringUtils.equal(_cardName, _playerCards[i].name())) {
+        for(uint i = 0; i < _players[_player].cards.length; i++){
+            if (StringUtils.equal(_cardName, _players[_player].cards[i].name)) {
                 return true;
             }
         }
@@ -204,16 +228,20 @@ contract Quartet {
 
     function doesPlayerHasCardFromFamily(address _player, string memory _cardName) internal isPlayer(_player) returns (bool) {
         string memory _cardFamily;
-        Card[] memory _playerCards = _players[_player].cards;
+        Card[] storage _playerCards;
 
-        for(uint i = 0; i<_allCards.length; i++){
-            if (StringUtils.equal(_cardName, _allCards[i].name())) {
-                _cardFamily = _allCards[i].family();
+        for(uint tempIndex = 0; tempIndex < _players[_player].cards.length; tempIndex++) {
+            _playerCards.push(_players[_player].cards[tempIndex]);
+        }
+
+        for(uint i = 0; i<_allCards.length; i++) {
+            if (StringUtils.equal(_cardName, _allCards[i].name)) {
+                _cardFamily = _allCards[i].family;
             }
         }
 
         for(uint j = 0; j < _playerCards.length; j++) {
-            if (StringUtils.equal(_cardFamily, _playerCards[j].family())) {
+            if (StringUtils.equal(_cardFamily, _playerCards[j].family)) {
                 return true;
             }
         }
@@ -225,16 +253,24 @@ contract Quartet {
         require(doesPlayerHasCardFromFamily(msg.sender, _cardName), "You can not ask about a family you don't have");
         require(doesPlayerHaveCard(_player, _cardName), "Src Player does not have the card");
 
-        Card[] memory _playerCards = _players[_player].cards;
-        Card _cardToMove;
+        Card[] storage _playerCards;
+
+        for(uint tempIndex = 0; tempIndex < _players[_player].cards.length; tempIndex++) {
+            _playerCards.push(_players[_player].cards[tempIndex]);
+        }
+
+        //Card _cardToMove;
         for(uint i = 0; i<_playerCards.length; i++){
-            if (StringUtils.equal(_cardName, _playerCards[i].name())) {
-                _cardToMove = _playerCards[i];
+            if (StringUtils.equal(_cardName, _playerCards[i].name)) {
+               Card memory _cardToMove = _playerCards[i];
 
                 // Update source cards
                 _playerCards[i] = _playerCards[_playerCards.length-1];
                 delete _playerCards[_playerCards.length-1];
-                _players[_player].cards = _playerCards;
+
+                for(uint j = 0; j < _playerCards.length; j++) {
+                    _players[_player].cards.push(_playerCards[j]);
+                }
 
                 return _cardToMove;
             }
@@ -243,7 +279,7 @@ contract Quartet {
     }
 
     function moveCard(address _src, string memory _cardName) public {
-        Card _card = getCardFromPlayer(_src, _cardName);
+        Card memory _card = getCardFromPlayer(_src, _cardName);
         addCardToPlayer(msg.sender, _card);
 
         emit CardMove(_src, msg.sender, _cardName);
@@ -257,10 +293,7 @@ contract Quartet {
         }
     }
 
-    function findFours(address _player, uint _numberOfJokersToUse) public returns(string[] memory) {
-        require(_numberOfJokersToUse <= _players[_player].numberOfJokers, "Can not use more jokers than current num of jokers.");
-
-        Card[] memory _playerCards = _players[_player].cards;
+    function _findFours(address _player, Card[] _playerCards, uint _numberOfJokersToUse) internal returns(string[] memory) {
         string[] storage _foundFours;
 
         // Find fours
@@ -268,7 +301,7 @@ contract Quartet {
             uint256 _familyCounter = 0;
 
             for(uint j = i; j < _playerCards.length; j++) {
-                if(StringUtils.equal(_playerCards[i].family(), _playerCards[j].family())) {
+                if(StringUtils.equal(_playerCards[i].family, _playerCards[j].family)) {
                     _familyCounter++;
                 }
             }
@@ -279,19 +312,23 @@ contract Quartet {
                     emit JokerUsed(_player);
                 }
 
-                emit FourFound(_player, _playerCards[i].family());
-                _foundFours.push(_playerCards[i].family());
+                emit FourFound(_player, _playerCards[i].family);
+                _foundFours.push(_playerCards[i].family);
 
                 _players[_player].numberOfFours++;
             }
         }
-
+        
+        return _foundFours;
+    }
+    
+    function _removeFours(address _player, string[] memory _foundFours) internal {
         Card[] storage _newPlayerCards;
         // Remove cards already combined to four
         for(uint k = 0; k < _players[_player].cards.length; k++) {
             bool _shouldSave = true;
             for(uint l = 0; l < _foundFours.length; l++) {
-                if(StringUtils.equal(_players[_player].cards[k].family(), _foundFours[l])) {
+                if(StringUtils.equal(_players[_player].cards[k].family, _foundFours[l])) {
                     _shouldSave = false;
                     break;
                 }
@@ -301,14 +338,30 @@ contract Quartet {
                 _newPlayerCards.push(_players[_player].cards[k]);
             }
         }
+        
+        for(uint i = 0; i < _newPlayerCards.length; i++) {
+            _players[_player].cards.push(_newPlayerCards[i]);
+        }
 
-        _players[_player].cards = _newPlayerCards;
         _players[_player].cards.length = _newPlayerCards.length;
+    }
 
+    function findFours(address _player, uint _numberOfJokersToUse) public returns(string[] memory) {
+        require(_numberOfJokersToUse <= _players[_player].numberOfJokers);
+
+        Card[] storage _playerCards;
+
+        for(uint index = 0; index < _players[_player].cards.length; index++) {
+            _playerCards.push(_players[_player].cards[index]);
+        }
+        
+        string[] memory _foundFours = _findFours(_player, _playerCards, _numberOfJokersToUse);
+        _removeFours(_player, _foundFours);
+        
         return _foundFours;
     }
 
-    function teardownGame() public hasGameFinished {
+    function teardownGame() public hasGameFinished returns (address, uint256){
         address _winningPlayer = address(0x0);
         uint maxFours = 0;
 
@@ -318,9 +371,11 @@ contract Quartet {
                 maxFours = _players[_playersIndex[i]].numberOfFours;
             }
         }
-        
-        _quartetCoin.transfer(_winningPlayer, _winBalance);
+
+        _isGameRunning = false;
+
         emit PlayerWithdrawal(address(this), _winningPlayer, _winBalance);
+        return (_winningPlayer, _winBalance);
     }
 
     function closeGame() public hasGameFinished areThereNoPlayers {
@@ -328,46 +383,52 @@ contract Quartet {
         _numberOfPlayers = 0;
         _winBalance = 0;
 
-        _moreCards = _allCards;
+        for(uint i = 0; i < _allCards.length; i++) {
+            _moreCards.push(_allCards[i]);
+        }
     }
 
-    function getPlayerCards(address _player) public view isCurrentPlayer(_player) returns (Card[] memory) {
-        return _players[_player].cards;
+    function getPlayerCards(address _player) public isCurrentPlayer(_player) returns (Card[]) {
+        Card[] storage _playerCards;
+
+        for(uint j = 0; j < _players[_player].cards.length; j++) {
+            _playerCards.push(_players[_player].cards[j]);
+        }
+
+        return _playerCards;
     }
 
     function getPlayerCardsHashes(address _player) public returns (bytes32[] memory) {
-        Card[] memory _playerCards = _players[_player].cards;
+        Card[] storage _playerCards;
+
+        for(uint tempIndex = 0; tempIndex < _players[_player].cards.length; tempIndex++) {
+            _playerCards.push(_players[_player].cards[tempIndex]);
+        }
+
         bytes32[] storage _hashes;
 
         for(uint index = 0; index < _playerCards.length; index++) {
-            _hashes.push(_playerCards[index].getHash());
+            _hashes.push(getHash(_playerCards[index]));
         }
 
         return _hashes;
     }
 
-    function getPrettyPlayerCards(address _player) public isCurrentPlayer(_player) returns (string[] memory) {
-        Card[] memory _playerCards = _players[_player].cards;
-        string[] storage _cards;
-
-        for(uint index = 0; index < _playerCards.length; index++) {
-            Card _card = _playerCards[index];
-            string memory _cardStr = strings.concat(strings.toSlice(strings.concat(strings.toSlice(_card.name()), strings.toSlice(", "))), strings.toSlice(_card.family()));
-            _cards.push(_cardStr);
-        }
-
-        return _cards;
-    }
-
     function swapCards(address _playerToSwapWith) public {
         require(_players[msg.sender].numberOfSwappers > 0, "Can not use swapper if have no swappers.");
 
-        Card[] memory _senderCards = _players[msg.sender].cards;
-        Card[] memory _swappedCards = _players[_playerToSwapWith].cards;
+        Card[] storage _senderCards;
 
-        _players[msg.sender].numberOfSwappers--;
-        _players[msg.sender].cards = _swappedCards;
-        _players[_playerToSwapWith].cards = _senderCards;
+        for(uint i = 0; i < _players[msg.sender].cards.length; i++) {
+            _senderCards.push(_players[msg.sender].cards[i]);
+        }
+
+        Card[] storage _swappedCards;
+
+        for(uint j = 0; j < _players[_playerToSwapWith].cards.length; j++) {
+            _swappedCards.push(_players[_playerToSwapWith].cards[j]);
+        }
+
         emit SwapperUsed(msg.sender, _playerToSwapWith);
     }
 
@@ -396,8 +457,8 @@ contract Quartet {
 
     function getHashForCard(string memory _name) public view returns (bytes32){
         for(uint index = 0; index < _allCards.length; index++) {
-            if(StringUtils.equal(_allCards[index].name(),  _name)) {
-                return _allCards[index].getHash();
+            if(StringUtils.equal(_allCards[index].name,  _name)) {
+                return getHash(_allCards[index]);
             }
         }
         revert("Can not find requested card");
@@ -405,5 +466,19 @@ contract Quartet {
 
     function goToNextPlayer(address _player) public {
         _currentPlayer = _player;
+    }
+
+    function getPlayersNames() public returns(string[]) {
+        string[] storage _playersNames;
+
+        for(uint i = 0; i<_numberOfPlayers; i++){
+            _playersNames.push(_players[_playersIndex[i]].name);
+        }
+
+        return _playersNames;
+    }
+
+    function isGameRunning() public view returns (bool) {
+        return _isGameRunning;
     }
 }
