@@ -91,20 +91,6 @@ router.get('/addToGame', (req, res) => {
     });
 
 })
-router.get('/getListOfGames', (req, res) => {
-    let games = [{
-        Name: 'best game ever',
-        Players: 'Itzik, Micha, Shimon, Edna'
-    }, {
-        Name: 'greatet game ever',
-        Players: 'Netanel, Ron, Shmulik, Ziva'
-    }]
-    res.json(games)
-})
-router.get('/createNewGame', (req, res) => {
-    let gameName = req.query['gameName']
-    res.json(gameName == 'x')
-})
 router.get('/useJokerCard', (req, res) => {
     let pk = req.query['pk'];
     if (pk != myAccount) {
@@ -182,28 +168,6 @@ router.get('/useSneakyPeaky', (req, res) => {
                 'Error': error
             })
         });
-    }).catch(function (error) {
-        console.log(error);
-        return res.send({
-            'Error': error
-        })
-    });
-})
-router.get('/leaveGame', (req, res) => {
-    let pk = req.query['pk'];
-
-    if (pk != myAccount) {
-        res.status(400).json('user cant run functions behalf of other user')
-    }
-
-    gameContract.methods.teardownGame().call({
-        gas: gas
-    }).then(function (result) {
-        console.log(result);
-        if (result === null) {
-            result = defaultResults.leaveGame
-        }
-        return res.send(result);
     }).catch(function (error) {
         console.log(error);
         return res.send({
