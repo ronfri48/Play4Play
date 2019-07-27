@@ -1,3 +1,6 @@
+// TODO: Add optional families and fix findFours
+
+
 pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
@@ -5,8 +8,7 @@ pragma experimental ABIEncoderV2;
 import "./strings.sol";
 
 contract Quartet {
-    using strings for *;
-    
+
     struct Card
     {
         string name;
@@ -26,6 +28,7 @@ contract Quartet {
         uint256 numberOfSwappers; // number of "Swap with other player" crads the player has
         uint256 numberOfWatchers; // number of "Watch other's cards" crads the player has
         Card[] cards; // player cards
+        mapping(string => uint8) foursCounters;
     }
 
     mapping(address => Player) private _players;
@@ -40,6 +43,7 @@ contract Quartet {
     Card[] private _moreCards;
     Card[] private _allCards;
     bool private _isGameRunning = false;
+    string[] private _optionalCardFamilies;
 
 
     ///-----------event logging-------------///
@@ -87,12 +91,11 @@ contract Quartet {
         require(_currentPlayer == _player, "Only player can get his cards.");
         _;
     }
-
-    ///******constructor********///
-    constructor() payable public {
+    
+    function _setup() internal {
         _currentPlayer = address(0x0);
-        _winBalance = 0;
         _numberOfPlayers = 0;
+        _winBalance = 0;
 
         _allCards.push(Card("Diskont", "Banks"));
         _allCards.push(Card("Hapoalim", "Banks"));
@@ -143,6 +146,15 @@ contract Quartet {
         }
 
         _isGameRunning = false;
+    }
+
+    ///******constructor********///
+    constructor() payable public {
+        _setup();
+        _optionalCardFamilies.push("Banks");
+        _optionalCardFamilies.push("BasketBallTeams");
+        _optionalCardFamilies.push("Celebs");
+        _optionalCardFamilies.push("Cities");
     }
 
 
@@ -214,6 +226,7 @@ contract Quartet {
 
     function addCardToPlayer(address _player, Card _card) internal isPlayer(_player) {
         _players[_player].cards.push(_card);
+        _players[_player].foursCounters[_card.family]++;
     }
 
     function doesPlayerHaveCard(address _player, string memory _cardName) internal view isPlayer(_player) returns (bool) {
@@ -226,22 +239,18 @@ contract Quartet {
         return false;
     }
 
-    function doesPlayerHasCardFromFamily(address _player, string memory _cardName) internal isPlayer(_player) returns (bool) {
+    function doesPlayerHasCardFromFamily(address _player, string memory _cardName) view internal isPlayer(_player) returns (bool) {
         string memory _cardFamily;
-        Card[] storage _playerCards;
-
-        for(uint tempIndex = 0; tempIndex < _players[_player].cards.length; tempIndex++) {
-            _playerCards.push(_players[_player].cards[tempIndex]);
-        }
 
         for(uint i = 0; i<_allCards.length; i++) {
             if (StringUtils.equal(_cardName, _allCards[i].name)) {
                 _cardFamily = _allCards[i].family;
+                break;
             }
         }
 
-        for(uint j = 0; j < _playerCards.length; j++) {
-            if (StringUtils.equal(_cardFamily, _playerCards[j].family)) {
+        for(uint j = 0; j < _players[_player].cards.length; j++) {
+            if (StringUtils.equal(_cardFamily, _players[_player].cards[j].family)) {
                 return true;
             }
         }
@@ -252,15 +261,15 @@ contract Quartet {
     function getCardFromPlayer(address _player, string memory _cardName) internal isPlayer(_player) returns (Card) {
         require(doesPlayerHasCardFromFamily(msg.sender, _cardName), "You can not ask about a family you don't have");
         require(doesPlayerHaveCard(_player, _cardName), "Src Player does not have the card");
-
-        Card[] storage _playerCards;
+        
+        Card[] memory _playerCards = new Card[](_players[_player].cards.length);
 
         for(uint tempIndex = 0; tempIndex < _players[_player].cards.length; tempIndex++) {
-            _playerCards.push(_players[_player].cards[tempIndex]);
+            _playerCards[tempIndex] = _players[_player].cards[tempIndex];
         }
 
         //Card _cardToMove;
-        for(uint i = 0; i<_playerCards.length; i++){
+        for(uint i = 0; i < _playerCards.length; i++){
             if (StringUtils.equal(_cardName, _playerCards[i].name)) {
                Card memory _cardToMove = _playerCards[i];
 
@@ -271,6 +280,8 @@ contract Quartet {
                 for(uint j = 0; j < _playerCards.length; j++) {
                     _players[_player].cards.push(_playerCards[j]);
                 }
+                
+                _players[_player].foursCounters[_cardToMove.family]--;
 
                 return _cardToMove;
             }
@@ -286,44 +297,47 @@ contract Quartet {
     }
 
     function evenGame() public {
-        for(uint i = 0; i<_numberOfPlayers; i++){
+        for(uint i = 0; i < _numberOfPlayers; i++){
             while (_players[_playersIndex[i]].cards.length < 4) {
                 addCardToPlayer(_playersIndex[i], popCardFromCenter());
             }
         }
     }
 
-    function _findFours(address _player, Card[] _playerCards, uint _numberOfJokersToUse) internal returns(string[] memory) {
-        string[] storage _foundFours;
-
-        // Find fours
-        for(uint i = 0; i < _playerCards.length; i++) {
-            uint256 _familyCounter = 0;
-
-            for(uint j = i; j < _playerCards.length; j++) {
-                if(StringUtils.equal(_playerCards[i].family, _playerCards[j].family)) {
-                    _familyCounter++;
-                }
-            }
-
-            if (_familyCounter == 4 || (_numberOfJokersToUse > 0 && _familyCounter == 3)) {
-                if (_familyCounter == 3) {
-                    _players[_player].numberOfJokers--;
+    function _findFours(address _player, uint _numberOfJokersToUse) internal returns(string[] memory) {
+        string[] memory _foundFours = new string[](_optionalCardFamilies.length);
+        uint8 _foundFoursIndex = 0;
+        
+        for(uint8 familiesIndex = 0; familiesIndex < _optionalCardFamilies.length; familiesIndex++)
+        {
+            uint8 _familyCounter = _players[_player].foursCounters[_optionalCardFamilies[familiesIndex]];
+            if(_familyCounter + _numberOfJokersToUse >= 4) {
+                if (_familyCounter < 4) {
+                    _numberOfJokersToUse = _numberOfJokersToUse - (4 - _familyCounter);
+                    _players[_player].numberOfJokers = _players[_player].numberOfJokers - (4 - _familyCounter);
                     emit JokerUsed(_player);
                 }
-
-                emit FourFound(_player, _playerCards[i].family);
-                _foundFours.push(_playerCards[i].family);
+                
+                emit FourFound(_player, _optionalCardFamilies[familiesIndex]);
+                _foundFours[_foundFoursIndex] = _optionalCardFamilies[familiesIndex];
+                _foundFoursIndex++;
 
                 _players[_player].numberOfFours++;
             }
         }
         
-        return _foundFours;
+        string[] memory _actualFoundFours = new string[](_foundFoursIndex + 1);
+        for(uint8 i = 0; i < _foundFoursIndex + 1; i++) {
+            _actualFoundFours[i] = _foundFours[i];
+        }
+        
+        return _actualFoundFours;
     }
     
     function _removeFours(address _player, string[] memory _foundFours) internal {
-        Card[] storage _newPlayerCards;
+        Card[] memory _newPlayerCards = new Card[](_players[_player].cards.length);
+        uint8 _newPlayerCardsIndex = 0;
+        
         // Remove cards already combined to four
         for(uint k = 0; k < _players[_player].cards.length; k++) {
             bool _shouldSave = true;
@@ -335,27 +349,24 @@ contract Quartet {
             }
 
             if (_shouldSave) {
-                _newPlayerCards.push(_players[_player].cards[k]);
+                _newPlayerCards[_newPlayerCardsIndex] = _players[_player].cards[k];
+                _newPlayerCardsIndex++;
             }
         }
         
-        for(uint i = 0; i < _newPlayerCards.length; i++) {
+        _players[_player].cards.length = 0;
+        
+        for(uint i = 0; i < _newPlayerCardsIndex + 1; i++) {
             _players[_player].cards.push(_newPlayerCards[i]);
         }
 
-        _players[_player].cards.length = _newPlayerCards.length;
+        _players[_player].cards.length = _newPlayerCardsIndex + 1;
     }
 
     function findFours(address _player, uint _numberOfJokersToUse) public returns(string[] memory) {
         require(_numberOfJokersToUse <= _players[_player].numberOfJokers);
-
-        Card[] storage _playerCards;
-
-        for(uint index = 0; index < _players[_player].cards.length; index++) {
-            _playerCards.push(_players[_player].cards[index]);
-        }
         
-        string[] memory _foundFours = _findFours(_player, _playerCards, _numberOfJokersToUse);
+        string[] memory _foundFours = _findFours(_player, _numberOfJokersToUse);
         _removeFours(_player, _foundFours);
         
         return _foundFours;
@@ -378,37 +389,19 @@ contract Quartet {
         return (_winningPlayer, _winBalance);
     }
 
-    function closeGame() public hasGameFinished areThereNoPlayers {
-        _currentPlayer = address(0x0);
-        _numberOfPlayers = 0;
-        _winBalance = 0;
-
-        for(uint i = 0; i < _allCards.length; i++) {
-            _moreCards.push(_allCards[i]);
-        }
+    function closeGame() public payable hasGameFinished areThereNoPlayers {
+        _setup();
     }
 
-    function getPlayerCards(address _player) public isCurrentPlayer(_player) returns (Card[]) {
-        Card[] storage _playerCards;
-
-        for(uint j = 0; j < _players[_player].cards.length; j++) {
-            _playerCards.push(_players[_player].cards[j]);
-        }
-
-        return _playerCards;
+    function getPlayerCards(address _player) public view isCurrentPlayer(_player) returns (Card[]) {
+        return _players[_player].cards;
     }
 
-    function getPlayerCardsHashes(address _player) public returns (bytes32[] memory) {
-        Card[] storage _playerCards;
+    function getPlayerCardsHashes(address _player) public view returns (bytes32[] memory) {
+        bytes32[] memory _hashes = new bytes32[](_players[_player].cards.length);
 
-        for(uint tempIndex = 0; tempIndex < _players[_player].cards.length; tempIndex++) {
-            _playerCards.push(_players[_player].cards[tempIndex]);
-        }
-
-        bytes32[] storage _hashes;
-
-        for(uint index = 0; index < _playerCards.length; index++) {
-            _hashes.push(getHash(_playerCards[index]));
+        for(uint index = 0; index < _players[_player].cards.length; index++) {
+            _hashes[index] = getHash(_players[_player].cards[index]);
         }
 
         return _hashes;
@@ -417,26 +410,21 @@ contract Quartet {
     function swapCards(address _playerToSwapWith) public {
         require(_players[msg.sender].numberOfSwappers > 0, "Can not use swapper if have no swappers.");
 
-        Card[] storage _senderCards;
-
-        for(uint i = 0; i < _players[msg.sender].cards.length; i++) {
-            _senderCards.push(_players[msg.sender].cards[i]);
-        }
-
-        Card[] storage _swappedCards;
+        Card[] memory _swappedCards = new Card[](_players[_playerToSwapWith].cards.length);
 
         for(uint j = 0; j < _players[_playerToSwapWith].cards.length; j++) {
-            _swappedCards.push(_players[_playerToSwapWith].cards[j]);
+            _swappedCards[j] = _players[_playerToSwapWith].cards[j];
         }
 
         emit SwapperUsed(msg.sender, _playerToSwapWith);
+        _players[msg.sender].numberOfSwappers--;
     }
 
     function watchCards(address _playerToWatch) public returns(Card[] memory) {
         require(_players[msg.sender].numberOfWatchers > 0, "Can not use watcher if have no watchers.");
 
         emit WatcherUsed(msg.sender, _playerToWatch);
-        _players[msg.sender].numberOfSwappers--;
+        _players[msg.sender].numberOfWatchers--;
         return _players[_playerToWatch].cards;
     }
 
@@ -464,15 +452,15 @@ contract Quartet {
         revert("Can not find requested card");
     }
 
-    function goToNextPlayer(address _player) public {
+    function goToNextPlayer(address _player) isCurrentPlayer(msg.sender) public {
         _currentPlayer = _player;
     }
 
-    function getPlayersNames() public returns(string[]) {
-        string[] storage _playersNames;
+    function getPlayersNames() public view returns(string[]) {
+        string[] memory _playersNames = new string[](4);
 
         for(uint i = 0; i<_numberOfPlayers; i++){
-            _playersNames.push(_players[_playersIndex[i]].name);
+            _playersNames[i] = _players[_playersIndex[i]].name;
         }
 
         return _playersNames;
