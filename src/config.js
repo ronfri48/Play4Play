@@ -1,5 +1,5 @@
 config = {
-
+    gameContractAddress: '0xa3e09c232ef00b7679ed343332069a20ddba4964aaaa',
     coinContractAddress: '0xb380812aba42f9acf517d5878dc9a7cdff3c522dd1a082c66a58b891900fc974',
     coinABI: [{
             "constant": false,
@@ -325,7 +325,7 @@ config = {
             "type": "function"
         },
         {
-            "constant": false,
+            "constant": true,
             "inputs": [{
                 "name": "_player",
                 "type": "address"
@@ -336,7 +336,7 @@ config = {
                 "type": "bytes32[]"
             }],
             "payable": false,
-            "stateMutability": "nonpayable",
+            "stateMutability": "view",
             "type": "function"
         },
         {
@@ -447,23 +447,8 @@ config = {
             "inputs": [],
             "name": "closeGame",
             "outputs": [],
-            "payable": false,
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "constant": false,
-            "inputs": [{
-                "name": "_player",
-                "type": "address"
-            }],
-            "name": "getPrettyPlayerCards",
-            "outputs": [{
-                "name": "",
-                "type": "string[]"
-            }],
-            "payable": false,
-            "stateMutability": "nonpayable",
+            "payable": true,
+            "stateMutability": "payable",
             "type": "function"
         },
         {

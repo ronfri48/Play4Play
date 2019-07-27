@@ -213,7 +213,7 @@ function loadContract(account) {
     coinContract = web3.eth.Contract(config.coinABI, config.coinContractAddress, {
         defaultAccount: account
     });
-    gameContract = web3.eth.Contract(config.gameABI, defaultResults.gameAddress, {
+    gameContract = web3.eth.Contract(config.gameABI, config.gameContractAddress, {
         defaultAccount: account
     });
 }

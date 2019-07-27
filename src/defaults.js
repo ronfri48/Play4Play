@@ -26,6 +26,6 @@ var defaults = {
     moveCard: false,
     isGameOn: true,
     playerNames: ['Mica', 'Rachel', 'Avi'],
-    gameAddress: '0x2a1a4dc9cc7943dd8a2bda43ff0aaca08448c57b' + 'aaaa'
+    gameAddress: '0xa3e09c232ef00b7679ed343332069a20ddba4964' + 'aaaa'
 }
 module.exports = defaults
