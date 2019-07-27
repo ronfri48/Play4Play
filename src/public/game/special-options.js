@@ -12,14 +12,13 @@ var specialOptionsData = [{
 }]
 
 function useJokerCard() {
-    let pk = document.cookie.substr('publicKey='.length);
     fetchFromServer('useJokerCard', function (isSucceeded) {
         if (!isSucceeded) {
             alert('error. could not buy joker')
         } else {
             loadGame();
         }
-    }, 'pk=' + pk)
+    })
 }
 
 function showPlayerSelectionModal(functionIndex) {
@@ -50,12 +49,11 @@ function useSneakyPeaky() {
 
 function useSneakyPeakyOnPlayer() {
     let victimPk = document.getElementById('special-player-selector').value;
-    let pk = document.cookie.substr('publicKey='.length);
     fetchFromServer('useSneakyPeaky', function (isSucceeded) {
         if (!isSucceeded) {
             alert('error. could not buy sneaky peaky')
         }
-    }, 'pk=' + pk + '&victimPk=' + victimPk)
+    }, 'victimPk=' + victimPk)
 }
 
 function useSwapCards() {
@@ -64,21 +62,9 @@ function useSwapCards() {
 
 function useSwapCardsOnPlayer() {
     let victimPk = document.getElementById('special-player-selector').value;
-    let pk = document.cookie.substr('publicKey='.length);
     fetchFromServer('useSwapCards', function (isSucceeded) {
         if (!isSucceeded) {
             alert('error. could not buy swap cards')
         }
-    }, 'pk=' + pk + '&victimPk=' + victimPk)
-}
-
-function leaveGame() {
-    let pk = document.cookie.substr('publicKey='.length);
-    fetchFromServer('leaveGame', function (isSucceeded) {
-        if (!isSucceeded) {
-            alert('error. could not leave game')
-        } else {
-            location.href = '/';
-        }
-    }, 'pk=' + pk)
+    }, 'victimPk=' + victimPk)
 }

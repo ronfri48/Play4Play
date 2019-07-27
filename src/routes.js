@@ -1,5 +1,6 @@
 const defaultResults = require('./defaults.js');
 const web3js = require('web3');
+var web3;
 var config = require('./config.js');
 var express = require('express');
 var MerkleTree = require('merkletreejs');
@@ -20,7 +21,9 @@ router.get('/getMyCards', (req, res) => {
         return res.send(result);
     }).catch(function (error) {
         console.log(error);
-        return res.send('Error ' + error)
+        return res.send({
+            'Error': error
+        })
     });
 })
 router.get('/getGameMessages', (req, res) => {
@@ -28,12 +31,34 @@ router.get('/getGameMessages', (req, res) => {
     res.json(messages)
 })
 router.get('/getPlayers', (req, res) => {
-    let messages = ['Ron', 'Shmulik', 'Ziva']
-    res.json(messages)
+    gameContract.methods.getPlayersNames().call({
+        gas: gas
+    }).then(function (names) {
+        if (names == null) {
+            names = defaultResults.playerNames;
+        }
+        res.json(names)
+    }).catch(function (error) {
+        res.json({
+            'Error': error
+        })
+    })
 })
 router.get('/isGameOn', (req, res) => {
-    let messages = true;
-    res.json(messages)
+    gameContract.methods.isGameRunning().call({
+        gas: gas
+    }).then(function (isGameOn) {
+        if (isGameOn == null) {
+
+            isGameOn = defaultResults.isGameOn;
+        }
+        //isGameOn = true; //TODO: delete this
+        res.json(isGameOn)
+    }).catch(function (error) {
+        res.json({
+            'Error': error
+        })
+    })
 })
 router.get('/requestCards', (req, res) => {
     let player = req.query['player'];
@@ -43,22 +68,26 @@ router.get('/requestCards', (req, res) => {
         gas: gas
     }).then(function (cardRequested) {
         console.log(cardRequested);
-        let result = checkTurn(cardRequested, player);
-        return res.send(result);
+        let isLeagal = checkTurn(cardRequested, player);
+        if (isLeagal) {
+            finishTurn();
+        }
+        return res.send(isLeagal);
     }).catch(function (error) {
         console.log(error);
-        return res.send('Error ' + error)
+        return res.send({
+            'Error': error
+        })
     });
 })
 router.get('/addToGame', (req, res) => {
-    let playerPk = req.query['pk'];
-    let gameIndex = req.query['gameIndex'];
+    let gameAddress = req.query['gameAddress'];
 
-    if (pk != myAccount) {
-        res.status(400).json('user cant run functions behalf of other user')
-    }
+    gameContract = web3.eth.Contract(config.gameABI, gameAddress, {
+        defaultAccount: myAccount
+    });
 
-    gameContract.methods.registerIntoGame(playerPk, 6).call({
+    gameContract.methods.registerIntoGame(myAccount).call({
         gas: gas
     }).then(function (result) {
         console.log(result);
@@ -68,53 +97,35 @@ router.get('/addToGame', (req, res) => {
         return res.send(result);
     }).catch(function (error) {
         console.log(error);
-        return res.send('Error ' + error)
+        return res.status(200).send({
+            'Error': error
+        })
     });
 
 })
-router.get('/getListOfGames', (req, res) => {
-    let games = [{
-        Name: 'best game ever',
-        Players: 'Itzik, Micha, Shimon, Edna'
-    }, {
-        Name: 'greatet game ever',
-        Players: 'Netanel, Ron, Shmulik, Ziva'
-    }]
-    res.json(games)
-})
-router.get('/createNewGame', (req, res) => {
-    let gameName = req.query['gameName']
-    res.json(gameName == 'x')
-})
 router.get('/useJokerCard', (req, res) => {
-    let pk = req.query['pk'];
-    if (pk != myAccount) {
-        res.status(400).json('user cant run functions behalf of other user')
-    }
     gameContract.methods.buyJoker().call({
         gas: gas
     }).then(function (result) {
-        console.log(result);
         if (result === null) {
             result = defaultResults.useJokerCard
         }
         return res.send(result);
     }).catch(function (error) {
         console.log(error);
-        return res.send('Error ' + error)
+        return res.send({
+            'Error': error
+        })
     });
 })
 router.get('/useSwapCards', (req, res) => {
-    let pk = req.query['pk'];
     let victimPk = req.query['victimPk'];
-    if (pk != myAccount) {
-        res.status(400).json('user cant run functions behalf of other user')
-    }
+
     gameContract.methods.buySwapper().call({
         gas: gas
     }).then(function (result) {
         console.log(result);
-        gameContract.methods.SwapperUsed(pk, victimPk).call({
+        gameContract.methods.SwapperUsed(myAccount, victimPk).call({
             gas: gas
         }).then(function (result) {
             console.log(result);
@@ -124,26 +135,25 @@ router.get('/useSwapCards', (req, res) => {
             return res.send(result);
         }).catch(function (error) {
             console.log(error);
-            return res.send('Error ' + error)
+            return res.send({
+                'Error': error
+            })
         });
     }).catch(function (error) {
         console.log(error);
-        return res.send('Error ' + error)
+        return res.send({
+            'Error': error
+        })
     });
 })
 router.get('/useSneakyPeaky', (req, res) => {
-    let pk = req.query['pk'];
     let victimPk = req.query['victimPk'];
-
-    if (pk != myAccount) {
-        res.status(400).json('user cant run functions behalf of other user')
-    }
 
     gameContract.methods.buyWatcher().call({
         gas: gas
     }).then(function (result) {
         console.log(result);
-        gameContract.methods.WatcherUsed(pk, victimPk).call({
+        gameContract.methods.WatcherUsed(myAccount, victimPk).call({
             gas: gas
         }).then(function (result) {
             console.log(result);
@@ -153,31 +163,15 @@ router.get('/useSneakyPeaky', (req, res) => {
             return res.send(result);
         }).catch(function (error) {
             console.log(error);
-            return res.send('Error ' + error)
+            return res.send({
+                'Error': error
+            })
         });
     }).catch(function (error) {
         console.log(error);
-        return res.send('Error ' + error)
-    });
-})
-router.get('/leaveGame', (req, res) => {
-    let pk = req.query['pk'];
-
-    if (pk != myAccount) {
-        res.status(400).json('user cant run functions behalf of other user')
-    }
-
-    gameContract.methods.teardownGame().call({
-        gas: gas
-    }).then(function (result) {
-        console.log(result);
-        if (result === null) {
-            result = defaultResults.leaveGame
-        }
-        return res.send(result);
-    }).catch(function (error) {
-        console.log(error);
-        return res.send('Error ' + error)
+        return res.send({
+            'Error': error
+        })
     });
 })
 router.get('/setPK', (req, res) => {
@@ -199,7 +193,9 @@ router.get('/payToUser', (req, res) => {
         return res.send(result);
     }).catch(function (error) {
         console.log(error);
-        return res.send('Error ' + error)
+        return res.send({
+            'Error': error
+        })
     });
 })
 
@@ -207,8 +203,6 @@ router.get('/payToUser', (req, res) => {
 function loadContract(account) {
     //var account = '0x3ee54cf657411f96a956344f08683f2a550d5869'
     myAccount = account;
-    var web3;
-
     if (typeof web3 !== 'undefined') {
 
         web3 = new web3js(web3.currentProvider);
@@ -216,11 +210,10 @@ function loadContract(account) {
         web3 = new web3js("https://ropsten.infura.io/v3/22156e2cbcd9492aa066ac25ccd14174");
     }
 
-    gameContract = web3.eth.Contract(config.gameABI, config.gameContractAddress, {
+    coinContract = web3.eth.Contract(config.coinABI, config.coinContractAddress, {
         defaultAccount: account
     });
-
-    coinContract = web3.eth.Contract(config.coinABI, config.coinContractAddress, {
+    gameContract = web3.eth.Contract(config.gameABI, defaultResults.gameAddress, {
         defaultAccount: account
     });
 }
@@ -253,9 +246,49 @@ function checkTurn(cardRequested, player) {
             return !found;
         }).catch(function (error) {
             console.log(error);
-            return res.send('Error ' + error)
+            return res.send({
+                'Error': error
+            })
         });
     }
+}
+
+function finishTurn() {
+    //teardownGame
+    //if end: pay & closeGame
+    //if not end: moveToNextPlayer
+
+    gameContract.methods.teardownGame().call({
+        gas: gas
+    }).then(function (whoToPay, amountToPay) {
+
+
+        coinContract.methods.transfer(whoToPay, amountToPay).call({
+            gas: gas
+        }).catch(function (error) {
+            return res.send({
+                'Error': error
+            })
+        });
+
+
+        gameContract.methods.closeGame().call({
+            gas: gas
+        }).then(function () {
+            res.json(true)
+        })
+
+    }).catch(function () {
+        gameContract.methods.moveToNextPlayer().call({
+            gas: gas
+        }).then(function () {
+            res.json(true)
+        }).catch(function (error) {
+            res.json({
+                'Error': error
+            })
+        })
+    });
 }
 
 
